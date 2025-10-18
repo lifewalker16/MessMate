@@ -82,7 +82,7 @@ export default function SignupScreen() {
   const router = useRouter();
   const otpInputs = useRef<TextInput[]>([]);
 
-  const API_URL = "http://192.168.1.3:5000";
+  const API_URL = "http://192.168.1.7:5000";
 
   // Send OTP from backend
   const handleVerifyEmail = async () => {

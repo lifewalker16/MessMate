@@ -30,7 +30,7 @@ export default function ExpensesScreen() {
     if (!userId) return;
     try {
       const token = await AsyncStorage.getItem('token');
-      const res = await fetch(`http://192.168.1.3:5000/expense/total/${userId}`, {
+      const res = await fetch(`http://192.168.1.7:5000/expense/total/${userId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -58,7 +58,7 @@ export default function ExpensesScreen() {
     if (!newItemName || !newItemPrice) return Alert.alert('Error', 'Enter item name and price');
     try {
       const token = await AsyncStorage.getItem('token');
-      const res = await fetch(`http://192.168.1.3:5000/expense/add`, {
+      const res = await fetch(`http://192.168.1.7:5000/expense/add`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({

@@ -8,7 +8,7 @@ export default function SplashScreen() {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      router.replace("/(auth)/login"); // 👈 redirect to login after 8s
+      router.replace("/ChoiceScreen"); 
     }, 3000);
 
     return () => clearTimeout(timer);

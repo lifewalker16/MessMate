@@ -6,8 +6,7 @@
   const menuRoutes = require("./routes/menuRoutes");
   // const profileRoutes = require("./routes/profileRoutes");
   const feedbackRoutes = require("./routes/feedbackRoutes");
-
-
+  const adminRoutes = require("./routes/adminRoutes");
 
   const app = express();
   app.use(express.json());
@@ -18,6 +17,7 @@
   app.use("/dashboard", dashboardRoutes);
   app.use("/", menuRoutes);
   app.use("/feedback", feedbackRoutes);
+  app.use("/",adminRoutes);
   // app.use("/", profileRoutes);
   // ✅ Start Server
   const PORT = process.env.PORT || 5000;

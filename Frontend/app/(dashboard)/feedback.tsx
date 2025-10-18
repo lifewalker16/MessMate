@@ -36,7 +36,7 @@ useEffect(() => {
   const fetchRecentFeedback = async () => {
     try {
       const token = await AsyncStorage.getItem('token'); // Assuming you store JWT after login
-      const response = await fetch('http://192.168.1.3:5000/feedback/getUserFeedback', {
+      const response = await fetch('http://192.168.1.7:5000/feedback/getUserFeedback', {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await response.json();
@@ -59,7 +59,7 @@ useEffect(() => {
 
     try {
       const token = await AsyncStorage.getItem('token'); // JWT from login
-      const response = await fetch('http://192.168.1.3:5000/feedback/submitFeedback', {
+      const response = await fetch('http://192.168.1.7:5000/feedback/submitFeedback', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

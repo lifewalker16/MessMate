@@ -13,7 +13,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 
-const API_BASE_URL = "http://192.168.1.3:5000";
+const API_BASE_URL = "http://192.168.1.7:5000";
 
 type RootStackParamList = {
   Login: undefined;

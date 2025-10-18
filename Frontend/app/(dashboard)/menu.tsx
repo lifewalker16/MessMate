@@ -31,45 +31,57 @@ export default function MenuScreen() {
   const [selectedDay, setSelectedDay] = useState(new Date().getDay());
   const [weeklyMenu, setWeeklyMenu] = useState<WeeklyMenu>({});
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false); // ✅ Added state
 
   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const dayKeys = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
   const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
   // ----- Fetch Weekly Menu -----
-  useEffect(() => {
-    const fetchMenu = async () => {
-      try {
-        const response = await fetch("http://192.168.1.3:5000/menu/weekly");
-        if (!response.ok) {
-          console.error("Server returned error:", response.status);
-          return;
+    useEffect(() => {
+      // ✅ Type-safe interval ID
+      let intervalId: ReturnType<typeof setInterval>;
+
+      const fetchMenu = async () => {
+        setLoading(true);
+        try {
+          const response = await fetch("http://192.168.1.7:5000/menu/weekly");
+          if (!response.ok) {
+            console.error("Server returned error:", response.status);
+            return;
+          }
+
+          const data = await response.json();
+
+          const convertedMenu: WeeklyMenu = Object.fromEntries(
+            Object.entries(data.menu).map(([day, meals]: [string, any]) => [
+              day,
+              {
+                breakfast: meals.breakfast.map((i: any) => ({ ...i, price: parseFloat(i.price) })),
+                lunch: meals.lunch.map((i: any) => ({ ...i, price: parseFloat(i.price) })),
+                dinner: meals.dinner.map((i: any) => ({ ...i, price: parseFloat(i.price) })),
+              },
+            ])
+          );
+
+          setWeeklyMenu(convertedMenu);
+        } catch (err) {
+          console.error("Error fetching menu:", err);
+        } finally {
+          setLoading(false);
         }
+      };
 
-        const data = await response.json();
+      // Fetch immediately
+      fetchMenu();
 
-        // Convert price strings to numbers once
-        const convertedMenu: WeeklyMenu = Object.fromEntries(
-          Object.entries(data.menu).map(([day, meals]: [string, any]) => [
-            day,
-            {
-              breakfast: meals.breakfast.map((i: any) => ({ ...i, price: parseFloat(i.price) })),
-              lunch: meals.lunch.map((i: any) => ({ ...i, price: parseFloat(i.price) })),
-              dinner: meals.dinner.map((i: any) => ({ ...i, price: parseFloat(i.price) })),
-            },
-          ])
-        );
+      // Auto-refresh every 10 seconds
+      intervalId = setInterval(fetchMenu, 10000);
 
-        setWeeklyMenu(convertedMenu);
-      } catch (err) {
-        console.error("Error fetching menu:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+      // Cleanup
+      return () => clearInterval(intervalId);
+    }, []);
 
-    fetchMenu();
-  }, []);
 
   // ----- Current Day Menu -----
   const todayMenu: DailyMenu = weeklyMenu[dayKeys[selectedDay]] || {
@@ -86,6 +98,11 @@ export default function MenuScreen() {
           <Calendar size={30} color="#FF4500" />
           <Text style={styles.headerTitle}>Weekly Menu</Text>
         </View>
+
+        {/* Refreshing Indicator */}
+        {refreshing && (
+          <Text style={styles.refreshText}>Refreshing...</Text>
+        )}
 
         {/* Day Selector */}
         <View style={styles.daySelector}>
@@ -184,6 +201,7 @@ function MealCard({ title, time, items }: MealCardProps) {
   );
 }
 
+// ----- Styles -----
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#F9FAFB" },
   scrollView: { flex: 1 },
@@ -193,6 +211,12 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#111827",
     marginLeft: 12,
+  },
+  refreshText: {
+    textAlign: "center",
+    color: "#FF4500",
+    fontWeight: "500",
+    marginBottom: 10,
   },
   daySelector: { paddingHorizontal: 24, marginBottom: 24 },
   dayButton: {

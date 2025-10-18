@@ -35,17 +35,19 @@ import AlertModal from "@/components/AlertModal";
 
 export default function HomeScreen() {
   // ✅ Boolean meal status
-  const [mealStatus, setMealStatus] = useState({
-    breakfast: false,
-    lunch: false,
-    dinner: false,
-  });
-
+        const [mealStatus, setMealStatus] = useState({
+          breakfast: false,
+          lunch: false,
+          dinner: false,
+        });
+        
         const [alertVisible, setAlertVisible] = useState(false);
         const [alertType, setAlertType] = useState<"success" | "error" | "warning">("success");
         const [alertTitle, setAlertTitle] = useState("");
         const [alertMessage, setAlertMessage] = useState("");
-        
+        const [announcements, setAnnouncements] = useState<any[]>([]);
+        const [hasTodayAnnouncement, setHasTodayAnnouncement] = useState(false);
+
         const showAlert = (
           type: "success" | "error" | "warning",
           title: string,
@@ -140,9 +142,9 @@ export default function HomeScreen() {
             const totalAmount = mealItems[meal].reduce((sum, item) => sum + item.price, 0);
 
             const response = await fetch(
-              "http://192.168.1.3:5000/dashboard/attendance/mark",
+              "http://192.168.1.7:5000/dashboard/attendance/mark",
               {
-                method: "POST",
+                method: "POST", 
                 headers: {
                   "Content-Type": "application/json",
                   Authorization: `Bearer ${token}`,
@@ -175,7 +177,7 @@ export default function HomeScreen() {
                 const token = await AsyncStorage.getItem("token");
                 if (!token) return;
 
-                const response = await fetch("http://192.168.1.3:5000/profile", {
+                const response = await fetch("http://192.168.1.7:5000/profile", {
                   headers: { Authorization: `Bearer ${token}` },
                 });
                 const data = await response.json();
@@ -199,7 +201,7 @@ export default function HomeScreen() {
 
               try {
                 const response = await fetch(
-                  "http://192.168.1.3:5000/dashboard/attendance/today",
+                  "http://192.168.1.7:5000/dashboard/attendance/today",
                   {
                     headers: { Authorization: `Bearer ${token}` },
                   }
@@ -220,6 +222,41 @@ export default function HomeScreen() {
 
             fetchAttendance();
           }, []);
+            //fetch announcement
+              useEffect(() => {
+                const fetchAnnouncements = async () => {
+                  try {
+                    const response = await fetch("http://192.168.1.7:5000/announcements");
+                    const data = await response.json();
+                    if (response.ok || response.status === 200) {
+                      setAnnouncements(data);
+
+                      // Filter for today’s announcements
+                      const today = new Date();
+                      const todayAnnouncements = data.filter((a: any) => {
+                        const created = new Date(a.created_at);
+                        return (
+                          created.getFullYear() === today.getFullYear() &&
+                          created.getMonth() === today.getMonth() &&
+                          created.getDate() === today.getDate()
+                        );
+                      });
+                      setHasTodayAnnouncement(todayAnnouncements.length > 0);
+                    }
+                  } catch (err) {
+                    console.error("Error fetching announcements:", err);
+                  }
+                };
+
+                // Initial fetch
+                fetchAnnouncements();
+
+                // Poll every 10 seconds
+                const interval = setInterval(fetchAnnouncements, 5000);
+
+                return () => clearInterval(interval); // cleanup on unmount
+              }, []);
+
 
           // ✅ Fetch weekly data
             const fetchWeekly = async () => {
@@ -228,7 +265,7 @@ export default function HomeScreen() {
 
               try {
                 const response = await fetch(
-                  "http://192.168.1.3:5000/dashboard/weekly-attendance",
+                  "http://192.168.1.7:5000/dashboard/weekly-attendance",
                   {
                     headers: { Authorization: `Bearer ${token}` },
                   }
@@ -253,7 +290,7 @@ export default function HomeScreen() {
             if (!token) return;
 
             try {
-              const response = await fetch("http://192.168.1.3:5000/dashboard/today-meal", {
+              const response = await fetch("http://192.168.1.7:5000/dashboard/today-meal", {
                 headers: { Authorization: `Bearer ${token}` },
               });
               const data = await response.json();
@@ -304,12 +341,15 @@ export default function HomeScreen() {
             style={styles.cardButton}
             onPress={() => setActiveModal("notice")}
           >
-            <View style={styles.badgeNB}>
-              <Text style={styles.badgeTextNB}>1</Text>
-            </View>
+            {hasTodayAnnouncement && (
+              <View style={styles.badgeNB}>
+                <Text style={styles.badgeTextNB}>!</Text>
+              </View>
+            )}
             <MaterialCommunityIcons name="bullhorn" size={24} color="#FF7D29" />
             <Text style={styles.cardLabel}>Notice Board</Text>
           </TouchableOpacity>
+
 
           <TouchableOpacity
             style={styles.cardButton}
@@ -534,14 +574,31 @@ export default function HomeScreen() {
             }}
             style={styles.modalContainer}
           >
-            {activeModal === "notice" && (
-              <>
-                <Text style={styles.modalTitle}>📢 Announcement</Text>
-                <Text style={styles.modalMessage}>
-                  Mess will remain closed on Sunday due to maintenance.
-                </Text>
-              </>
-            )}
+          {activeModal === "notice" && (
+            <>
+              <Text style={styles.modalTitle}>📢 Announcement</Text>
+              {announcements.length === 0 || !hasTodayAnnouncement ? (
+                <Text style={styles.modalMessage}>No announcements today</Text>
+              ) : (
+                announcements
+                  .filter((a) => {
+                    const today = new Date();
+                    const created = new Date(a.created_at);
+                    return (
+                      created.getFullYear() === today.getFullYear() &&
+                      created.getMonth() === today.getMonth() &&
+                      created.getDate() === today.getDate()
+                    );
+                  })
+                  .map((a, idx) => (
+                    <Text key={idx} style={styles.modalMessage}>
+                      {a.title}: {a.content}
+                    </Text>
+                  ))
+              )}
+            </>
+          )}
+
 
             {activeModal === "expense" && (
               <>
