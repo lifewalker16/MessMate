@@ -19,6 +19,7 @@ type RootStackParamList = {
   Login: undefined;
   Profile: undefined;
   Dashboard: undefined;
+  ChoiceScreen: undefined; // ✅ Added
 };
 
 type ProfileScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Profile'>;
@@ -27,52 +28,49 @@ export default function ProfileScreen() {
   const navigation = useNavigation<ProfileScreenNavigationProp>();
   const [userInfo, setUserInfo] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [isLoggedIn, setIsLoggedIn] = useState(true);
 
-useEffect(() => {
-  const fetchProfile = async () => {
-    if (!isLoggedIn) return; // stop fetch if logged out
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const token = await AsyncStorage.getItem("token");
+        if (!token) {
+          // If no token, go to ChoiceScreen
+          navigation.reset({ index: 0, routes: [{ name: "ChoiceScreen" }] });
+          return;
+        }
 
-    try {
-      const token = await AsyncStorage.getItem("token");
-      if (!token) {
-        setIsLoggedIn(false);
-        navigation.reset({ index: 0, routes: [{ name: "Login" }] });
-        return;
+        const res = await fetch(`${API_BASE_URL}/profile`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        const data = await res.json();
+        if (res.ok) setUserInfo(data.user);
+        else console.error("Error fetching profile:", data.error);
+      } catch (err) {
+        console.error("Fetch failed:", err);
+      } finally {
+        setLoading(false);
       }
+    };
 
-      const res = await fetch(`${API_BASE_URL}/profile`, {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
+    fetchProfile();
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem("token");
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "ChoiceScreen" }],
       });
-
-      const data = await res.json();
-      if (res.ok) setUserInfo(data.user);
-      else console.error("Error fetching profile:", data.error);
     } catch (err) {
-      console.error("Fetch failed:", err);
-    } finally {
-      setLoading(false);
+      console.error("Logout failed:", err);
     }
   };
-
-  fetchProfile();
-}, [isLoggedIn]);
-
-
-const handleLogout = async () => {
-  setIsLoggedIn(false); // prevent further fetches
-  await AsyncStorage.removeItem("token");
-
-  navigation.reset({
-    index: 0,
-    routes: [{ name: "Login" }],
-  });
-};
-
 
   const menuItems = [
     { icon: Settings, title: 'Account Settings', subtitle: 'Manage your account preferences', color: '#6B7280' },
@@ -80,17 +78,19 @@ const handleLogout = async () => {
     { icon: HelpCircle, title: 'Help & Support', subtitle: 'Get help and contact support', color: '#FF4500' },
   ];
 
-  if (loading) return (
-    <SafeAreaView style={styles.container}>
-      <ActivityIndicator size="large" color="#FF4500" style={{ marginTop: 50 }} />
-    </SafeAreaView>
-  );
+  if (loading)
+    return (
+      <SafeAreaView style={styles.container}>
+        <ActivityIndicator size="large" color="#FF4500" style={{ marginTop: 50 }} />
+      </SafeAreaView>
+    );
 
-  if (!userInfo) return (
-    <SafeAreaView style={styles.container}>
-      <Text style={{ textAlign: "center", marginTop: 50 }}>Failed to load profile</Text>
-    </SafeAreaView>
-  );
+  if (!userInfo)
+    return (
+      <SafeAreaView style={styles.container}>
+        <Text style={{ textAlign: "center", marginTop: 50 }}>Failed to load profile</Text>
+      </SafeAreaView>
+    );
 
   return (
     <SafeAreaView style={styles.container}>
@@ -108,7 +108,6 @@ const handleLogout = async () => {
               <User size={40} color="#FFFFFF" />
             </View>
           </View>
-
           <View style={styles.profileInfo}>
             <Text style={styles.profileName}>{userInfo.full_name}</Text>
             <Text style={styles.profileId}>Student ID: {userInfo.id}</Text>
@@ -126,26 +125,9 @@ const handleLogout = async () => {
           </View>
         </View>
 
-        {/* Menu Items */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Settings</Text>
-          {menuItems.map((item, index) => (
-            <TouchableOpacity key={index} style={styles.menuItem}>
-              <View style={[styles.menuIcon, { backgroundColor: item.color }]}>
-                <item.icon size={20} color="#FFFFFF" />
-              </View>
-              <View style={styles.menuContent}>
-                <Text style={styles.menuTitle}>{item.title}</Text>
-                <Text style={styles.menuSubtitle}>{item.subtitle}</Text>
-              </View>
-              <ChevronRight size={20} color="#D1D5DB" />
-            </TouchableOpacity>
-          ))}
-        </View>
-
         {/* Logout Button */}
         <View style={styles.section}>
-          <TouchableOpacity style={styles.logoutButton} onPress={() => {}}>
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
             <LogOut size={20} color="#EF4444" />
             <Text style={styles.logoutText}>Sign Out</Text>
           </TouchableOpacity>
@@ -177,25 +159,10 @@ function ContactItem({ icon: Icon, label, value, color }: ContactItemProps) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#F9FAFB',
-  },
-  scrollView: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 24,
-    paddingBottom: 16,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#111827',
-    marginLeft: 12,
-  },
+  container: { flex: 1, backgroundColor: '#F9FAFB' },
+  scrollView: { flex: 1 },
+  header: { flexDirection: 'row', alignItems: 'center', padding: 24, paddingBottom: 16 },
+  headerTitle: { fontSize: 24, fontWeight: 'bold', color: '#111827', marginLeft: 12 },
   profileCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
@@ -209,45 +176,14 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 2,
   },
-  avatarContainer: {
-    marginBottom: 16,
-  },
-  avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#FF4500',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  profileInfo: {
-    alignItems: 'center',
-  },
-  profileName: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#111827',
-    marginBottom: 4,
-  },
-  profileId: {
-    fontSize: 14,
-    color: '#6B7280',
-    marginBottom: 4,
-  },
-  profileJoinDate: {
-    fontSize: 12,
-    color: '#9CA3AF',
-  },
-  section: {
-    padding: 24,
-    paddingTop: 0,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#111827',
-    marginBottom: 16,
-  },
+  avatarContainer: { marginBottom: 16 },
+  avatar: { width: 80, height: 80, borderRadius: 40, backgroundColor: '#FF4500', alignItems: 'center', justifyContent: 'center' },
+  profileInfo: { alignItems: 'center' },
+  profileName: { fontSize: 24, fontWeight: 'bold', color: '#111827', marginBottom: 4 },
+  profileId: { fontSize: 14, color: '#6B7280', marginBottom: 4 },
+  profileJoinDate: { fontSize: 12, color: '#9CA3AF' },
+  section: { padding: 24, paddingTop: 0 },
+  sectionTitle: { fontSize: 18, fontWeight: '600', color: '#111827', marginBottom: 16 },
   contactCard: {
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
@@ -258,68 +194,11 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 2,
   },
-  contactItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
-  },
-  contactIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  contactInfo: {
-    flex: 1,
-    marginLeft: 12,
-  },
-  contactLabel: {
-    fontSize: 12,
-    color: '#6B7280',
-    marginBottom: 2,
-  },
-  contactValue: {
-    fontSize: 14,
-    color: '#111827',
-    fontWeight: '500',
-  },
-  menuItem: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.03,
-    shadowRadius: 4,
-    elevation: 1,
-  },
-  menuIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  menuContent: {
-    flex: 1,
-    marginLeft: 16,
-  },
-  menuTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#111827',
-    marginBottom: 2,
-  },
-  menuSubtitle: {
-    fontSize: 12,
-    color: '#6B7280',
-  },
+  contactItem: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
+  contactIcon: { width: 32, height: 32, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
+  contactInfo: { flex: 1, marginLeft: 12 },
+  contactLabel: { fontSize: 12, color: '#6B7280', marginBottom: 2 },
+  contactValue: { fontSize: 14, color: '#111827', fontWeight: '500' },
   logoutButton: {
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
@@ -330,10 +209,5 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#FEE2E2',
   },
-  logoutText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#EF4444',
-    marginLeft: 8,
-  },
+  logoutText: { fontSize: 16, fontWeight: '600', color: '#EF4444', marginLeft: 8 },
 });

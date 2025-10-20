@@ -47,7 +47,19 @@ export default function HomeScreen() {
         const [alertMessage, setAlertMessage] = useState("");
         const [announcements, setAnnouncements] = useState<any[]>([]);
         const [hasTodayAnnouncement, setHasTodayAnnouncement] = useState(false);
-
+        const [expenseSummary, setExpenseSummary] = useState<{
+          today: number;
+          week: number;
+          month: number;
+          year: number;
+        } | null>(null); 
+        const [messAttendance, setMessAttendance] = useState(false);
+        const [showConfetti, setShowConfetti] = useState(false);
+        const [activeModal, setActiveModal] = useState<null | "notice" | "expense">(null);
+        const [weeklyData, setWeeklyData] = useState<number[]>([]);
+        const [user, setUser] = useState<{ user_id: number; full_name: string } | null>(
+          null
+        );
         const showAlert = (
           type: "success" | "error" | "warning",
           title: string,
@@ -58,15 +70,6 @@ export default function HomeScreen() {
           setAlertMessage(message);
           setAlertVisible(true);
         };
-
-
-          const [messAttendance, setMessAttendance] = useState(false);
-          const [showConfetti, setShowConfetti] = useState(false);
-          const [activeModal, setActiveModal] = useState<null | "notice" | "expense">(null);
-          const [weeklyData, setWeeklyData] = useState<number[]>([]);
-          const [user, setUser] = useState<{ user_id: number; full_name: string } | null>(
-            null
-          );
 
           const currentDate = new Date().toLocaleDateString("en-US", {
             weekday: "long",
@@ -139,7 +142,11 @@ export default function HomeScreen() {
 
           try {
             // Calculate total for selected meal
-            const totalAmount = mealItems[meal].reduce((sum, item) => sum + item.price, 0);
+            
+          const totalAmount = mealItems[meal].reduce((sum, item) => sum + Number(item.price), 0);
+
+           // const totalAmount = mealItems[meal].reduce((sum, item) => sum + item.price, 0);
+          
 
             const response = await fetch(
               "http://192.168.1.7:5000/dashboard/attendance/mark",
@@ -152,6 +159,8 @@ export default function HomeScreen() {
                 body: JSON.stringify({ meal, amount: totalAmount }),
               }
             );
+
+
 
             const data = await response.json();
             if (response.ok) {
@@ -256,6 +265,36 @@ export default function HomeScreen() {
 
                 return () => clearInterval(interval); // cleanup on unmount
               }, []);
+            
+          // ✅ Fetch expense summary
+            const fetchExpenseSummary = async () => {
+              try {
+                const token = await AsyncStorage.getItem("token");
+                const storedUser = await AsyncStorage.getItem("user");
+                if (!token || !storedUser) return;
+
+                const user = JSON.parse(storedUser);
+                const response = await fetch(
+                  `http://192.168.1.7:5000/expense/summary/${user.id}`,
+                  {
+                    headers: {
+                      Authorization: `Bearer ${token}`,
+                    },
+                  }
+                );
+                const data = await response.json();
+                if (response.ok) setExpenseSummary(data);
+              } catch (err) {
+                console.error("Error fetching expense summary:", err);
+              }
+            };
+
+            // Fetch summary when modal opens
+            useEffect(() => {
+              if (activeModal === "expense") {
+                fetchExpenseSummary();
+              }
+            }, [activeModal]);
 
 
           // ✅ Fetch weekly data
@@ -387,8 +426,29 @@ export default function HomeScreen() {
             <Text style={styles.mealLabel}>Mark Attendance</Text>
 
             {["breakfast", "lunch", "dinner"].map((meal) => (
-              <TouchableOpacity key={meal} onPress={() => markMeal(meal as any)}>
-                <View style={styles.mealCardSmall}>
+              <TouchableOpacity
+                  key={meal}
+                  disabled={mealStatus[meal as "breakfast" | "lunch" | "dinner"]}
+                  onPress={() => {
+                    if (!mealStatus[meal as "breakfast" | "lunch" | "dinner"]) {
+                      markMeal(meal as any);
+                    } else {
+                      showAlert(
+                        "warning",
+                        "Already Marked",
+                        `You've already marked attendance for ${meal}.`
+                      );
+                    }
+                  }}
+                  style={[
+                    styles.mealCardSmall,
+                    mealStatus[meal as "breakfast" | "lunch" | "dinner"]
+                      ? { opacity: 0.7 , borderWidth: 2, borderColor: "#22C55E"} // visually show it's disabled
+                      : null,
+                  ]}
+                >
+
+                {/* <View style={styles.mealCardSmall}> */}
                   <Image
                     source={
                       meal === "breakfast"
@@ -412,7 +472,7 @@ export default function HomeScreen() {
                       </View>
                     )}
                   </View>
-                </View>
+                {/* </View> */}
               </TouchableOpacity>
             ))}
           </View>
@@ -599,15 +659,22 @@ export default function HomeScreen() {
             </>
           )}
 
-
             {activeModal === "expense" && (
               <>
                 <Text style={styles.modalTitle}>💰 Expense Summary</Text>
-                <Text style={styles.modalMessage}>Today: ₹50</Text>
-                <Text style={styles.modalMessage}>This Week: ₹490</Text>
-                <Text style={styles.modalMessage}>This Month: ₹1880</Text>
+                {expenseSummary ? (
+                  <>
+                    <Text style={styles.modalMessage}>Today: ₹{expenseSummary.today}</Text>
+                    <Text style={styles.modalMessage}>This Week: ₹{expenseSummary.week}</Text>
+                    <Text style={styles.modalMessage}>This Month: ₹{expenseSummary.month}</Text>
+                    <Text style={styles.modalMessage}>This Year: ₹{expenseSummary.year}</Text>
+                  </>
+                ) : (
+                  <Text style={styles.modalMessage}>Loading summary...</Text>
+                )}
               </>
             )}
+
 
             <TouchableOpacity
               style={styles.closeButton}
@@ -1000,6 +1067,5 @@ mealItemPrice: {
   fontWeight: "700",
   color: "#0BA6DF",
 },
-
 
 });

@@ -48,8 +48,9 @@ exports.getTodayAttendance = async (req, res) => {
 // ✅ Mark attendance
 exports.markAttendance = async (req, res) => {
   const user_id = req.user.id;
-  const { meal } = req.body;
- const today = getLocalDateString(); 
+  const { meal, amount } = req.body;  // ✅ frontend sends amount
+  console.log("➡️ Received from frontend:", { meal, amount });
+  const today = getLocalDateString();
 
   if (!["breakfast", "lunch", "dinner"].includes(meal)) {
     return res.status(400).json({ error: "Invalid meal" });
@@ -60,32 +61,43 @@ exports.markAttendance = async (req, res) => {
   }
 
   try {
-    // Check if record exists
+    // ✅ Check existing attendance record
     const [rows] = await db.query(
       "SELECT * FROM attendance WHERE user_id=? AND date=?",
       [user_id, today]
     );
 
     if (rows.length === 0) {
-      // Insert new row
       await db.query(
         `INSERT INTO attendance (user_id, date, ${meal}) VALUES (?, ?, 1)`,
         [user_id, today]
       );
     } else {
-      // Update existing row
       await db.query(
         `UPDATE attendance SET ${meal}=1 WHERE user_id=? AND date=?`,
         [user_id, today]
       );
     }
+    
+    console.log("💰 Adding expense:", { user_id, meal, amount });
 
-    res.json({ message: `${meal} attendance marked successfully` });
+    // ✅ INSERT into expense table
+    if (amount && amount > 0) {
+      await db.query(
+        `INSERT INTO expenses (user_id, item_name, price, category) VALUES (?, ?, ?, 'Regular Meals')`,
+        [user_id, `${meal.charAt(0).toUpperCase() + meal.slice(1)} Meal`, amount]
+      );
+      console.log("✅ Expense added successfully!");
+    }
+    
+
+    res.json({ message: `${meal} attendance marked successfully`, expenseAdded: true });
   } catch (err) {
-    console.error(err);
+    console.error("Error marking attendance:", err);
     res.status(500).json({ error: "Server error" });
   }
 };
+
 
 // ✅ Weekly attendance (0-3 scale, aligned Monday → Sunday)
 exports.getWeeklyAttendance = async (req, res) => {

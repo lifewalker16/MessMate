@@ -33,7 +33,7 @@ exports.getUserFeedback = async (req, res) => {
     const userId = req.user.id;
 
     const [rows] = await db.query(
-      "SELECT feedback_id, category, stars, comment, status, created_at FROM feedback WHERE user_id = ? ORDER BY created_at DESC",
+      "SELECT feedback_id, category, stars, comment, status, created_at FROM feedback WHERE user_id = ? ORDER BY created_at DESC LIMIT 5",
       [userId]
     );
 

@@ -31,57 +31,74 @@ export default function MenuScreen() {
   const [selectedDay, setSelectedDay] = useState(new Date().getDay());
   const [weeklyMenu, setWeeklyMenu] = useState<WeeklyMenu>({});
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false); // ✅ Added state
 
   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  const dayKeys = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
-  const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const dayKeys = [
+    "sunday",
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+  ];
+  const dayNames = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
 
   // ----- Fetch Weekly Menu -----
-    useEffect(() => {
-      // ✅ Type-safe interval ID
-      let intervalId: ReturnType<typeof setInterval>;
+  useEffect(() => {
+    let intervalId: ReturnType<typeof setInterval>;
 
-      const fetchMenu = async () => {
-        setLoading(true);
-        try {
-          const response = await fetch("http://192.168.1.7:5000/menu/weekly");
-          if (!response.ok) {
-            console.error("Server returned error:", response.status);
-            return;
-          }
-
-          const data = await response.json();
-
-          const convertedMenu: WeeklyMenu = Object.fromEntries(
-            Object.entries(data.menu).map(([day, meals]: [string, any]) => [
-              day,
-              {
-                breakfast: meals.breakfast.map((i: any) => ({ ...i, price: parseFloat(i.price) })),
-                lunch: meals.lunch.map((i: any) => ({ ...i, price: parseFloat(i.price) })),
-                dinner: meals.dinner.map((i: any) => ({ ...i, price: parseFloat(i.price) })),
-              },
-            ])
-          );
-
-          setWeeklyMenu(convertedMenu);
-        } catch (err) {
-          console.error("Error fetching menu:", err);
-        } finally {
-          setLoading(false);
+    const fetchMenu = async () => {
+      try {
+        const response = await fetch("http://192.168.1.7:5000/menu/weekly");
+        if (!response.ok) {
+          console.error("Server returned error:", response.status);
+          return;
         }
-      };
 
-      // Fetch immediately
-      fetchMenu();
+        const data = await response.json();
 
-      // Auto-refresh every 10 seconds
-      intervalId = setInterval(fetchMenu, 10000);
+        const convertedMenu: WeeklyMenu = Object.fromEntries(
+          Object.entries(data.menu).map(([day, meals]: [string, any]) => [
+            day,
+            {
+              breakfast: meals.breakfast.map((i: any) => ({
+                ...i,
+                price: parseFloat(i.price),
+              })),
+              lunch: meals.lunch.map((i: any) => ({
+                ...i,
+                price: parseFloat(i.price),
+              })),
+              dinner: meals.dinner.map((i: any) => ({
+                ...i,
+                price: parseFloat(i.price),
+              })),
+            },
+          ])
+        );
 
-      // Cleanup
-      return () => clearInterval(intervalId);
-    }, []);
+        setWeeklyMenu(convertedMenu);
+      } catch (err) {
+        console.error("Error fetching menu:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
+    fetchMenu(); // initial load
+    intervalId = setInterval(fetchMenu, 10000); // auto-refresh silently
+
+    return () => clearInterval(intervalId);
+  }, []);
 
   // ----- Current Day Menu -----
   const todayMenu: DailyMenu = weeklyMenu[dayKeys[selectedDay]] || {
@@ -98,11 +115,6 @@ export default function MenuScreen() {
           <Calendar size={30} color="#FF4500" />
           <Text style={styles.headerTitle}>Weekly Menu</Text>
         </View>
-
-        {/* Refreshing Indicator */}
-        {refreshing && (
-          <Text style={styles.refreshText}>Refreshing...</Text>
-        )}
 
         {/* Day Selector */}
         <View style={styles.daySelector}>
@@ -132,14 +144,30 @@ export default function MenuScreen() {
 
         {/* Selected Day Menu */}
         {loading ? (
-          <ActivityIndicator size="large" color="#FF4500" style={{ marginTop: 50 }} />
+          <ActivityIndicator
+            size="large"
+            color="#FF4500"
+            style={{ marginTop: 50 }}
+          />
         ) : (
           <View style={styles.menuContainer}>
             <Text style={styles.dayTitle}>{dayNames[selectedDay]}'s Menu</Text>
 
-            <MealCard title="Breakfast" time="8:00 AM - 10:00 AM" items={todayMenu.breakfast} />
-            <MealCard title="Lunch" time="12:30 PM - 2:30 PM" items={todayMenu.lunch} />
-            <MealCard title="Dinner" time="7:30 PM - 9:30 PM" items={todayMenu.dinner} />
+            <MealCard
+              title="Breakfast"
+              time="8:00 AM - 10:00 AM"
+              items={todayMenu.breakfast}
+            />
+            <MealCard
+              title="Lunch"
+              time="12:30 PM - 2:30 PM"
+              items={todayMenu.lunch}
+            />
+            <MealCard
+              title="Dinner"
+              time="7:30 PM - 9:30 PM"
+              items={todayMenu.dinner}
+            />
           </View>
         )}
       </ScrollView>
@@ -211,12 +239,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#111827",
     marginLeft: 12,
-  },
-  refreshText: {
-    textAlign: "center",
-    color: "#FF4500",
-    fontWeight: "500",
-    marginBottom: 10,
   },
   daySelector: { paddingHorizontal: 24, marginBottom: 24 },
   dayButton: {

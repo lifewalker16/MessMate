@@ -97,7 +97,7 @@ export default function Login() {
       if (response.ok) {
         showAlert("success", "Success", "Login successful!");
 
-        if (remember && data.token) {
+        if (data.token) {
           await AsyncStorage.setItem("token", data.token);
           await AsyncStorage.setItem("user", JSON.stringify(data.user));
         }
