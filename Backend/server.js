@@ -1,6 +1,7 @@
   require("dotenv").config();
   const express = require("express");
   const cors = require("cors");
+  
   const authRoutes = require("./routes/authRoutes");
   const dashboardRoutes = require("./routes/dashboardRoutes");
   const expenseRoutes = require("./routes/expenseRoutes");
@@ -23,7 +24,7 @@
 
   // app.use("/", profileRoutes);
   // ✅ Start Server
-  const PORT = process.env.PORT || 5000;
+  const PORT = process.env.SERVER_PORT || 5000;
   app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
   });

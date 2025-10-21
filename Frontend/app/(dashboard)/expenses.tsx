@@ -48,7 +48,7 @@ export default function ExpensesScreen() {
     if (!userId || !token) return;
 
     try {
-      const res = await fetch(`http://192.168.1.7:5000/expense/total/${userId}?period=${selectedPeriod}`, {
+      const res = await fetch(`http://192.168.1.3:5000/expense/total/${userId}?period=${selectedPeriod}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -103,7 +103,7 @@ export default function ExpensesScreen() {
     if (!token || !userId) return;
 
     try {
-      const res = await fetch(`http://192.168.1.7:5000/expense/add`, {
+      const res = await fetch(`http://192.168.1.3:5000/expense/add`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({

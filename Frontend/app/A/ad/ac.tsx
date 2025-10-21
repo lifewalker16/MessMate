@@ -4,7 +4,7 @@ import axios from "axios";
 
 type Announcement = { id: number; title: string; content: string };
 
-const API_URL = "http://192.168.1.7:5000";
+const API_URL = "http://192.168.1.3:5000";
 
 const Announcements: React.FC = () => {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);

@@ -27,7 +27,7 @@ const Feedback: React.FC = () => {
       setLoading(true);
 
       const response = await fetch(
-        "http://192.168.1.7:5000/feedback/getPendingFeedback",
+        "http://192.168.1.3:5000/feedback/getPendingFeedback",
         {
           method: "GET",
           headers: {
@@ -65,7 +65,7 @@ const markAsReviewed = async (id: number) => {
     );
 
     // Send update to backend
-    await fetch(`http://192.168.1.7:5000/feedback/updateStatus/${id}`, {
+    await fetch(`http://192.168.1.3:5000/feedback/updateStatus/${id}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: "Reviewed" }),

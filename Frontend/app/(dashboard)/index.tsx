@@ -149,7 +149,7 @@ export default function HomeScreen() {
           
 
             const response = await fetch(
-              "http://192.168.1.7:5000/dashboard/attendance/mark",
+              "http://192.168.1.3:5000/dashboard/attendance/mark",
               {
                 method: "POST", 
                 headers: {
@@ -186,7 +186,7 @@ export default function HomeScreen() {
                 const token = await AsyncStorage.getItem("token");
                 if (!token) return;
 
-                const response = await fetch("http://192.168.1.7:5000/profile", {
+                const response = await fetch("http://192.168.1.3:5000/profile", {
                   headers: { Authorization: `Bearer ${token}` },
                 });
                 const data = await response.json();
@@ -210,7 +210,7 @@ export default function HomeScreen() {
 
               try {
                 const response = await fetch(
-                  "http://192.168.1.7:5000/dashboard/attendance/today",
+                  "http://192.168.1.3:5000/dashboard/attendance/today",
                   {
                     headers: { Authorization: `Bearer ${token}` },
                   }
@@ -235,7 +235,7 @@ export default function HomeScreen() {
               useEffect(() => {
                 const fetchAnnouncements = async () => {
                   try {
-                    const response = await fetch("http://192.168.1.7:5000/announcements");
+                    const response = await fetch("http://192.168.1.3:5000/announcements");
                     const data = await response.json();
                     if (response.ok || response.status === 200) {
                       setAnnouncements(data);
@@ -275,7 +275,7 @@ export default function HomeScreen() {
 
                 const user = JSON.parse(storedUser);
                 const response = await fetch(
-                  `http://192.168.1.7:5000/expense/summary/${user.id}`,
+                  `http://192.168.1.3:5000/expense/summary/${user.id}`,
                   {
                     headers: {
                       Authorization: `Bearer ${token}`,
@@ -304,7 +304,7 @@ export default function HomeScreen() {
 
               try {
                 const response = await fetch(
-                  "http://192.168.1.7:5000/dashboard/weekly-attendance",
+                  "http://192.168.1.3:5000/dashboard/weekly-attendance",
                   {
                     headers: { Authorization: `Bearer ${token}` },
                   }
@@ -329,7 +329,7 @@ export default function HomeScreen() {
             if (!token) return;
 
             try {
-              const response = await fetch("http://192.168.1.7:5000/dashboard/today-meal", {
+              const response = await fetch("http://192.168.1.3:5000/dashboard/today-meal", {
                 headers: { Authorization: `Bearer ${token}` },
               });
               const data = await response.json();

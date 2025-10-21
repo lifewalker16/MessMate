@@ -58,7 +58,7 @@ export default function MenuScreen() {
 
     const fetchMenu = async () => {
       try {
-        const response = await fetch("http://192.168.1.7:5000/menu/weekly");
+        const response = await fetch("http://192.168.1.3:5000/menu/weekly");
         if (!response.ok) {
           console.error("Server returned error:", response.status);
           return;

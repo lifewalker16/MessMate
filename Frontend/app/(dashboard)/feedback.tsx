@@ -47,7 +47,7 @@ const fetchRecentFeedback = async (silent = false) => {
   try {
     if (!silent) setLoadingFeedbacks(true); // only show loader first time
     const token = await AsyncStorage.getItem('token');
-    const response = await fetch('http://192.168.1.7:5000/feedback/getUserFeedback', {
+    const response = await fetch('http://192.168.1.3:5000/feedback/getUserFeedback', {
       headers: { Authorization: `Bearer ${token}` },
     });
     const data = await response.json();
@@ -73,7 +73,7 @@ const fetchRecentFeedback = async (silent = false) => {
 
     try {
       const token = await AsyncStorage.getItem('token');
-      const response = await fetch('http://192.168.1.7:5000/feedback/submitFeedback', {
+      const response = await fetch('http://192.168.1.3:5000/feedback/submitFeedback', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
