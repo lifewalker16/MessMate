@@ -9,7 +9,7 @@ const AttendanceCountModule = () => {
     const fetchAttendanceCounts = async () => {
       try {
         const res = await axios.get(
-          "http://192.168.1.3:5000/api/admin/attendance/today-students"
+          "https://messmate-2xh8.onrender.com/api/admin/attendance/today-students"
         );
 
         setCounts({
@@ -31,7 +31,7 @@ useEffect(() => {
   const fetchEmailStatus = async () => {
     try {
       const res = await axios.get(
-        "http://192.168.1.3:5000/api/admin/attendance/email-status"
+        "https://messmate-2xh8.onrender.com/api/admin/attendance/email-status"
       );
       setEmailStatus(res.data);
     } catch (err) {

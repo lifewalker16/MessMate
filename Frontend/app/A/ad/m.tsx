@@ -15,7 +15,7 @@ const AdminMenu: React.FC = () => {
   }, [selectedDay]);
 
   const fetchMenu = (day: string) => {
-    axios.get(`http://192.168.1.3:5000/api/admin/menu/${day}`)
+    axios.get(`https://messmate-2xh8.onrender.com/api/admin/menu/${day}`)
       .then(res => {
         setMenu(res.data.menu);
         setFoodItems(res.data.foodItems);
@@ -37,7 +37,7 @@ const AdminMenu: React.FC = () => {
 
   const saveMenu = (mealType: string, menu_id: number) => {
     const foodIds = menu[mealType];
-    axios.post(`http://192.168.1.3:5000/api/admin/menu/${menu_id}`, { foodIds })
+    axios.post(`https://messmate-2xh8.onrender.com/api/admin/menu/${menu_id}`, { foodIds })
       .then(() => alert(`${mealType} menu saved`))
       .catch(err => alert("Error saving menu"));
   };

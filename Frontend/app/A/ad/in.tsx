@@ -13,7 +13,7 @@ const InviteStudent: React.FC = () => {
     }
 
     try {
-      const res = await axios.post("http://192.168.1.3:5000/api/admin/invite-student", {
+      const res = await axios.post("https://messmate-2xh8.onrender.com/api/admin/invite-student", {
         full_name: fullName,
         email,
       });

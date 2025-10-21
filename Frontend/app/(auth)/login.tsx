@@ -84,7 +84,7 @@ export default function Login() {
 
     setLoading(true);
     try {
-      const response = await fetch("http://192.168.1.3:5000/login", {
+      const response = await fetch("https://messmate-2xh8.onrender.com/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

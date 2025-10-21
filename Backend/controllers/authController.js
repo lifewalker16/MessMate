@@ -1,7 +1,7 @@
   const bcrypt = require("bcryptjs");
   const jwt = require("jsonwebtoken");
   const db = require("../config/db");
-  const sendOtpEmail = require("../utils/mailer");
+  const {sendOtpEmail} = require("../utils/mailer");
 
   const SECRET_KEY = process.env.SECRET_KEY || "your_secret_key";
 
