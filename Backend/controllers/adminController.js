@@ -16,6 +16,8 @@ exports.inviteStudent = async (req, res) => {
       return res.status(400).json({ message: "Name and Email required" });
 
     const password = generatePassword();
+    console.log("Generated password for", email, ":", password);
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Insert new user
