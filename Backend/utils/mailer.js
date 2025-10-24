@@ -1,13 +1,21 @@
 const nodemailer = require("nodemailer");
 const path = require("path");
+const brevoTransport = require("nodemailer-sendinblue");
 
-const transporter = nodemailer.createTransport({
-  service: "gmail", // 👈 you can replace this with "Outlook", "Yahoo", or custom SMTP
-  auth: {
-    user: process.env.EMAIL_USER, // your Gmail address
-    pass: process.env.EMAIL_PASS, // app password 
-  },
-});
+// const transporter = nodemailer.createTransport({
+//   service: "gmail", // 👈 you can replace this with "Outlook", "Yahoo", or custom SMTP
+//   auth: {
+//     user: process.env.EMAIL_USER, // your Gmail address
+//     pass: process.env.EMAIL_PASS, // app password 
+//   },
+// });
+
+
+const transporter = nodemailer.createTransport(
+  brevoTransport({
+    apiKey: process.env.BREVO_API_KEY, // store this in your Render env vars
+  })
+);
 
 
 // ✅ 1️⃣ OTP Email
