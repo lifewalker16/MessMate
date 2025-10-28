@@ -7,14 +7,20 @@ import {
   StyleSheet,
   Image,
   Modal,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import Checkbox from "expo-checkbox";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { MotiView, MotiText } from "moti";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-// ✅ Custom Alert Component
+
+// ✅ Animated Alert Modal
 function AlertModal({ visible, type, title, message, onClose }) {
   const getIcon = () => {
     switch (type) {
@@ -23,32 +29,57 @@ function AlertModal({ visible, type, title, message, onClose }) {
       case "error":
         return "close-circle";
       default:
-        return "warning";
+        return "alert-circle";
     }
   };
 
   return (
     <Modal transparent visible={visible} animationType="fade">
       <View style={styles.modalOverlay}>
-        <View style={styles.modalCard}>
-          <Ionicons 
+        <MotiView
+          from={{ opacity: 0 }} // removed scale & bounce
+          animate={{ opacity: 1 }}
+          transition={{ type: "timing", duration: 300 }} // simple fade-in
+          style={styles.modalCard}
+        >
+          <Ionicons
             name={getIcon()}
-            size={50}
-            color={type === "success" ? "green" : type === "error" ? "red" : "orange"}
+            size={56}
+            color={
+              type === "success"
+                ? "#34C759"
+                : type === "error"
+                ? "#FF3B30"
+                : "#FF9500"
+            }
             style={{ marginBottom: 10 }}
           />
-          <Text style={styles.modalTitle}>{title}</Text>
+          <MotiText
+            from={{ opacity: 0, translateY: 10 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{ delay: 150 }}
+            style={styles.modalTitle}
+          >
+            {title}
+          </MotiText>
           <Text style={styles.modalMessage}>{message}</Text>
-          <TouchableOpacity onPress={onClose} style={{ width: "100%", marginTop: 15 }}>
-            <LinearGradient colors={["#FF7E5F", "#FF4500"]} style={styles.modalButton}>
+          <TouchableOpacity
+            onPress={onClose}
+            style={{ width: "100%", marginTop: 15 }}
+          >
+            <LinearGradient
+              colors={["#FF7E5F", "#FF4500"]}
+              style={styles.modalButton}
+            >
               <Text style={styles.modalButtonText}>OK</Text>
             </LinearGradient>
           </TouchableOpacity>
-        </View>
+        </MotiView>
       </View>
     </Modal>
   );
 }
+
 
 export default function Login() {
   const router = useRouter();
@@ -58,11 +89,6 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // focus states
-  const [emailFocused, setEmailFocused] = useState(false);
-  const [passwordFocused, setPasswordFocused] = useState(false);
-
-  // ✅ Custom alert state
   const [alertVisible, setAlertVisible] = useState(false);
   const [alertType, setAlertType] = useState("success");
   const [alertTitle, setAlertTitle] = useState("");
@@ -75,114 +101,150 @@ export default function Login() {
     setAlertVisible(true);
   };
 
-  // ✅ Handle Login with Backend
   const handleLogin = async () => {
     if (!email || !password) {
-      showAlert("error", "Error", "Please enter both email and password");
+      showAlert("error", "Missing Info", "Please enter email and password");
       return;
     }
-
     setLoading(true);
     try {
-      const response = await fetch("http://192.168.1.7:5000/login", {
+      const response = await fetch("http://10.246.134.45:5000/login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-
       const data = await response.json();
-
       if (response.ok) {
-        showAlert("success", "Success", "Login successful!");
-
+        showAlert("success", "Welcome!", "Login successful!");
         if (data.token) {
           await AsyncStorage.setItem("token", data.token);
           await AsyncStorage.setItem("user", JSON.stringify(data.user));
         }
-
-        setTimeout(() => {
-          router.replace("/(dashboard)");
-        }, 1500);
+        setTimeout(() => router.replace("/(dashboard)"), 1500);
       } else {
         showAlert("error", "Login Failed", data.error || "Invalid credentials");
       }
     } catch (error) {
-      console.error("Login error:", error);
-      showAlert("error", "Error", "Something went wrong. Please try again.");
+      showAlert("error", "Network Error", "Please try again later.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <View style={styles.container}>
-      {/* Card */}
-      <View style={styles.card}>
-        <View style={styles.logoContainer}>
-          <Image
-            source={require("@/assets/images/logo.png")}
-            style={styles.logo}
-            resizeMode="contain"
-          />
-        </View>
+    <LinearGradient
+      colors={["#FFF3E2", "#FFD1BA"]}
+      style={styles.container}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+    >
+    <SafeAreaView style={styles.safeArea}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1, width: "100%" }}
+      >
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1, justifyContent: "center", alignItems: "center" }}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Card */}
+          <MotiView
+            from={{ opacity: 0, translateY: 40 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{ type: "timing", duration: 600 }}
+            style={styles.card}
+          >
+            <Image
+              source={require("@/assets/images/logo.png")}
+              style={styles.logo}
+              resizeMode="contain"
+            />
 
-        <Text style={styles.title}>Welcome Back</Text>
-        <Text style={styles.subtitle}>Sign in to your hostel mess account</Text>
+            <Text style={styles.title}>Welcome Back 👋</Text>
+            <Text style={styles.subtitle}>
+              Sign in to continue your MessMate journey
+            </Text>
 
-        <Text style={styles.label}>Email Address</Text>
-        <TextInput
-          style={[styles.input, emailFocused && { borderColor: "#FF7E5F" }]}
-          placeholder="Enter your email"
-          value={email}
-          onChangeText={setEmail}
-          onFocus={() => setEmailFocused(true)}
-          onBlur={() => setEmailFocused(false)}
-        />
+            {/* Email */}
+            <View style={styles.inputWrapper}>
+              <Ionicons name="mail-outline" size={18} color="#FF7E5F" />
+              <TextInput
+                style={styles.input}
+                placeholder="Email Address"
+                placeholderTextColor="#999"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+            </View>
 
-        <Text style={styles.label}>Password</Text>
-        <View style={[styles.passwordContainer, passwordFocused && { borderColor: "#FF7E5F" }]}>
-          <TextInput
-            style={styles.passwordInput}
-            placeholder="Enter your password"
-            secureTextEntry={!showPassword}
-            value={password}
-            onChangeText={setPassword}
-            onFocus={() => setPasswordFocused(true)}
-            onBlur={() => setPasswordFocused(false)}
-          />
-          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-            <Ionicons name={showPassword ? "eye-off" : "eye"} size={22} color="gray" />
-          </TouchableOpacity>
-        </View>
+            {/* Password */}
+            <View style={styles.inputWrapper}>
+              <Ionicons name="lock-closed-outline" size={18} color="#FF7E5F" />
+              <TextInput
+                style={styles.input}
+                placeholder="Password"
+                placeholderTextColor="#999"
+                secureTextEntry={!showPassword}
+                value={password}
+                onChangeText={setPassword}
+              />
+              <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                <Ionicons
+                  name={showPassword ? "eye-off" : "eye"}
+                  size={20}
+                  color="#777"
+                />
+              </TouchableOpacity>
+            </View>
 
-        <View style={styles.row}>
-          <View style={styles.checkboxRow}>
-            <Checkbox value={remember} onValueChange={setRemember} color={remember ? "#FF7E5F" : undefined} />
-            <Text style={styles.checkboxText}>Remember me</Text>
-          </View>
+            {/* Remember + Forgot */}
+            <View style={styles.row}>
+              <View style={styles.checkboxRow}>
+                <Checkbox
+                  value={remember}
+                  onValueChange={setRemember}
+                  color={remember ? "#FF7E5F" : undefined}
+                />
+                <Text style={styles.checkboxText}>Remember me</Text>
+              </View>
 
-          <TouchableOpacity>
-            <Text style={styles.forgotText}>Forgot password?</Text>
-          </TouchableOpacity>
-        </View>
+              <TouchableOpacity>
+                <Text style={styles.forgotText}>Forgot password?</Text>
+              </TouchableOpacity>
+            </View>
 
-        <TouchableOpacity onPress={handleLogin} style={{ marginTop: 15, width: "100%" }} disabled={loading}>
-          <LinearGradient colors={["#FF7E5F", "#FF4500"]} style={styles.button}>
-            <Text style={styles.buttonText}>{loading ? "Signing In..." : "Sign In"}</Text>
-          </LinearGradient>
-        </TouchableOpacity>
+            {/* Login Button */}
+            <TouchableOpacity
+              onPress={handleLogin}
+              style={{ marginTop: 15, width: "100%" }}
+              disabled={loading}
+            >
+              <LinearGradient
+                colors={["#FF7E5F", "#FF4500"]}
+                style={styles.button}
+              >
+                <Text style={styles.buttonText}>
+                  {loading ? "Signing In..." : "Sign In"}
+                </Text>
+              </LinearGradient>
+            </TouchableOpacity>
 
-        <Text style={styles.footerText}>
-          Don’t have an account? {" "}
-          <Text style={styles.link} onPress={() => router.push("/(auth)/signup")}>
-            Sign up here
-          </Text>
-        </Text>
-      </View>
+            <Text style={styles.footerText}>
+              Don’t have an account?{" "}
+              <Text
+                style={styles.link}
+                onPress={() => router.push("/(auth)/signup")}
+              >
+                Sign up
+              </Text>
+            </Text>
+          </MotiView>
 
-      <Text style={styles.footerNote}>MessMate</Text>
+          <Text style={styles.footerNote}>© 2025 MessMate</Text>
+        </ScrollView>
+      </KeyboardAvoidingView>
 
       {/* ✅ Custom Alert Modal */}
       <AlertModal
@@ -192,81 +254,64 @@ export default function Login() {
         message={alertMessage}
         onClose={() => setAlertVisible(false)}
       />
-    </View>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#fffaf5",
-    padding: 20,
+  safeArea: {
+  flex: 1,
+  backgroundColor: "transparent", // 👈 allows gradient to show through
+  alignItems: "center",
   },
+  container: { flex: 1 },
   card: {
-    width: "100%",
-    backgroundColor: "white",
-    borderRadius: 12,
-    padding: 20,
+    width: "90%",
+    backgroundColor: "rgba(255,255,255,0.95)",
+    borderRadius: 18,
+    padding: 25,
     shadowColor: "#000",
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.15,
     shadowOffset: { width: 0, height: 5 },
-    shadowRadius: 10,
-    elevation: 5,
+    shadowRadius: 12,
+    elevation: 8,
     alignItems: "center",
-  },
-  logoContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 15,
   },
   logo: {
-    width: 80,
-    height: 80,
+    width: 90,
+    height: 90,
+    marginBottom: 15,
   },
   title: {
-    fontSize: 22,
-    fontWeight: "bold",
-    marginBottom: 5,
-    textAlign: "center",
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#333",
+    marginBottom: 4,
   },
   subtitle: {
     fontSize: 14,
-    color: "gray",
-    marginBottom: 20,
+    color: "#666",
     textAlign: "center",
+    marginBottom: 25,
   },
-  label: {
-    fontSize: 14,
-    fontWeight: "600",
-    marginBottom: 5,
-    color: "#333",
-    alignSelf: "flex-start",
-  },
-  input: {
-    width: "100%",
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 15,
-    fontSize: 14,
-  },
-  passwordContainer: {
+  inputWrapper: {
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
     borderColor: "#ddd",
-    borderRadius: 8,
-    paddingHorizontal: 10,
+    borderRadius: 10,
+    paddingHorizontal: 12,
     marginBottom: 15,
     width: "100%",
+    backgroundColor: "#fff",
   },
-  passwordInput: {
+  input: {
     flex: 1,
-    padding: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 8,
     fontSize: 14,
+    color: "#333",
   },
   row: {
     flexDirection: "row",
@@ -274,83 +319,67 @@ const styles = StyleSheet.create({
     width: "100%",
     marginBottom: 10,
   },
-  checkboxRow: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  checkboxText: {
-    marginLeft: 8,
-    color: "#333",
-    fontSize: 14,
-  },
-  forgotText: {
-    color: "#FF4500",
-    fontWeight: "500",
-  },
+  checkboxRow: { flexDirection: "row", alignItems: "center" },
+  checkboxText: { marginLeft: 8, fontSize: 14, color: "#333" },
+  forgotText: { color: "#FF4500", fontWeight: "600", fontSize: 13 },
   button: {
     width: "100%",
-    padding: 15,
-    borderRadius: 8,
+    paddingVertical: 15,
+    borderRadius: 10,
     alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#FF4500",
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
   },
-  buttonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "600",
-  },
+  buttonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
   footerText: {
-    marginTop: 20,
+    marginTop: 18,
     fontSize: 14,
-    color: "gray",
+    color: "#555",
   },
-  link: {
-    color: "#FF4500",
-    fontWeight: "600",
-  },
+  link: { color: "#FF4500", fontWeight: "700" },
   footerNote: {
-    marginTop: 15,
-    color: "gray",
-    fontSize: 14,
-    fontWeight:600,
+    marginTop: 25,
+    color: "#666",
+    fontSize: 13,
+    fontWeight: "500",
   },
-  // ✅ Modal Styles
+  // Alert Modal Styles
   modalOverlay: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0,0,0,0.4)",
+    backgroundColor: "rgba(0,0,0,0.35)",
   },
   modalCard: {
     width: "80%",
-    backgroundColor: "white",
-    borderRadius: 16,
+    backgroundColor: "#fff",
+    borderRadius: 18,
     padding: 20,
     alignItems: "center",
     shadowColor: "#000",
     shadowOpacity: 0.25,
     shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 10,
+    shadowRadius: 8,
     elevation: 10,
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 5,
-    textAlign: "center",
+    fontWeight: "700",
+    color: "#333",
+    marginBottom: 6,
   },
   modalMessage: {
     fontSize: 14,
-    color: "gray",
+    color: "#666",
     textAlign: "center",
   },
   modalButton: {
     padding: 12,
     borderRadius: 10,
     alignItems: "center",
+    width: "100%",
   },
-  modalButtonText: {
-    color: "white",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
+  modalButtonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
 });

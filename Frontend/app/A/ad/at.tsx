@@ -1,17 +1,23 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, ScrollView, StyleSheet } from "react-native";
+import { MotiView } from "moti";
+import { Ionicons } from "@expo/vector-icons";
 import axios from "axios";
 
 const AttendanceCountModule = () => {
   const [counts, setCounts] = useState({ breakfast: 0, lunch: 0, dinner: 0 });
-  const [emailStatus, setEmailStatus] = useState({ breakfast: false, lunch: false, dinner: false });
+  const [emailStatus, setEmailStatus] = useState({
+    breakfast: false,
+    lunch: false,
+    dinner: false,
+  });
+
   useEffect(() => {
     const fetchAttendanceCounts = async () => {
       try {
         const res = await axios.get(
-          "http://192.168.1.7:5000/api/admin/attendance/today-students"
+          "http://10.246.134.45:5000/api/admin/attendance/today-students"
         );
-
         setCounts({
           breakfast: res.data.breakfast.length,
           lunch: res.data.lunch.length,
@@ -21,66 +27,59 @@ const AttendanceCountModule = () => {
         console.error("Error fetching attendance:", err);
       }
     };
-
     fetchAttendanceCounts();
   }, []);
 
-  
-useEffect(() => {
-  // Define the function inside useEffect
-  const fetchEmailStatus = async () => {
-    try {
-      const res = await axios.get(
-        "http://192.168.1.7:5000/api/admin/attendance/email-status"
-      );
-      setEmailStatus(res.data);
-    } catch (err) {
-      console.error("Error fetching email status:", err);
-    }
-  };
+  useEffect(() => {
+    const fetchEmailStatus = async () => {
+      try {
+        const res = await axios.get(
+          "http://10.246.134.45:5000/api/admin/attendance/email-status"
+        );
+        setEmailStatus(res.data);
+      } catch (err) {
+        console.error("Error fetching email status:", err);
+      }
+    };
+    fetchEmailStatus();
+    const interval = setInterval(fetchEmailStatus, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
-  // Fetch immediately on mount
-  fetchEmailStatus();
-
-  // Set interval to fetch every 1 minute
-  const interval = setInterval(fetchEmailStatus, 60000);
-
-  // Cleanup on unmount
-  return () => clearInterval(interval);
-}, []);
-
-
+  const meals = [
+    { name: "Breakfast", key: "breakfast", icon: "sunny", color: "#FFB347" },
+    { name: "Lunch", key: "lunch", icon: "restaurant", color: "#FF7E5F" },
+    { name: "Dinner", key: "dinner", icon: "moon", color: "#6B5B95" },
+  ];
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.header}>Today's Attendance Counts</Text>
-
-    <View style={styles.card}>
-      <Text style={styles.meal}>Breakfast</Text>
-      <Text style={styles.count}>{counts.breakfast} students</Text>
-      <Text style={{ marginTop: 5, color: emailStatus.breakfast ? "green" : "red" }}>
-        {emailStatus.breakfast ? "Email Sent ✅" : "Pending ⏳"}
-      </Text>
-    </View>
-
-
-    <View style={styles.card}>
-      <Text style={styles.meal}>Lunch</Text>
-      <Text style={styles.count}>{counts.lunch} students</Text>
-      <Text style={{ marginTop: 5, color: emailStatus.lunch ? "green" : "red" }}>
-        {emailStatus.lunch ? "Email Sent ✅" : "Pending ⏳"}
-      </Text>
-    </View>
-
-
-      <View style={styles.card}>
-        <Text style={styles.meal}>Dinner</Text>
-        <Text style={styles.count}>{counts.dinner} students</Text>
-        <Text style={{ marginTop: 5, color: emailStatus.dinner ? "green" : "red" }}>
-          {emailStatus.dinner ? "Email Sent ✅" : "Pending ⏳"}
-        </Text>
-      </View>
-
+    <ScrollView style={styles.container}>
+      <Text style={styles.header}>Today's Attendance 📊</Text>
+      {meals.map((meal, index) => (
+        <MotiView
+          key={meal.key}
+          from={{ opacity: 0, translateX: -30 }}
+          animate={{ opacity: 1, translateX: 0 }}
+          transition={{ type: "timing", duration: 400, delay: index * 100 }}
+          style={[styles.card, { borderLeftWidth: 4, borderLeftColor: meal.color }]}
+        >
+          <View style={styles.cardHeader}>
+            <Ionicons name={meal.icon as any} size={28} color={meal.color} />
+            <Text style={[styles.meal, { color: meal.color }]}>{meal.name}</Text>
+          </View>
+          <Text style={styles.count}>{counts[meal.key as keyof typeof counts]} students</Text>
+          <View style={styles.statusRow}>
+            <Ionicons
+              name={emailStatus[meal.key as keyof typeof emailStatus] ? "checkmark-circle" : "time"}
+              size={18}
+              color={emailStatus[meal.key as keyof typeof emailStatus] ? "#34C759" : "#FF9500"}
+            />
+            <Text style={styles.statusText}>
+              {emailStatus[meal.key as keyof typeof emailStatus] ? "Email Sent" : "Pending"}
+            </Text>
+          </View>
+        </MotiView>
+      ))}
     </ScrollView>
   );
 };
@@ -88,38 +87,28 @@ useEffect(() => {
 export default AttendanceCountModule;
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 20,
-    alignItems: "center",
-  },
+  container: { padding: 10 },
   header: {
     fontSize: 24,
-    fontWeight: "bold",
+    fontWeight: "700",
     marginBottom: 20,
     color: "#FF4500",
+    textAlign: "center",
   },
   card: {
-    width: "90%",
-    backgroundColor: "#fff",
-    padding: 20,
-    borderRadius: 15,
-    marginVertical: 10,
-    shadowColor: "#FF4500",
-    shadowOpacity: 0.2,
+    backgroundColor: "rgba(255,255,255,0.95)",
+    padding: 18,
+    borderRadius: 18,
+    marginBottom: 15,
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
     shadowOffset: { width: 0, height: 5 },
-    shadowRadius: 10,
-    elevation: 5,
-    alignItems: "center",
+    shadowRadius: 12,
+    elevation: 8,
   },
-  meal: {
-    fontSize: 20,
-    fontWeight: "600",
-    marginBottom: 10,
-    color: "#333",
-  },
-  count: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#FF4500",
-  },
+  cardHeader: { flexDirection: "row", alignItems: "center", marginBottom: 10, gap: 10 },
+  meal: { fontSize: 20, fontWeight: "700" },
+  count: { fontSize: 18, fontWeight: "600", color: "#333", marginBottom: 8 },
+  statusRow: { flexDirection: "row", alignItems: "center", gap: 6 },
+  statusText: { fontSize: 14, color: "#666", fontWeight: "500" },
 });

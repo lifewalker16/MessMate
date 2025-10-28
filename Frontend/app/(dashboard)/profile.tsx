@@ -6,23 +6,28 @@ import {
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
+  Image,
 } from 'react-native';
+import { User, LogOut, Mail } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { User, Settings, Bell, CircleHelp as HelpCircle, LogOut, ChevronRight, Mail } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
+import { LinearGradient } from 'expo-linear-gradient';
 
-const API_BASE_URL = "http://192.168.1.7:5000";
+const API_BASE_URL = "http://10.246.134.45:5000";
 
 type RootStackParamList = {
   Login: undefined;
   Profile: undefined;
   Dashboard: undefined;
-  ChoiceScreen: undefined; // ✅ Added
+  ChoiceScreen: undefined;
 };
 
-type ProfileScreenNavigationProp = NativeStackNavigationProp<RootStackParamList, 'Profile'>;
+type ProfileScreenNavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  'Profile'
+>;
 
 export default function ProfileScreen() {
   const navigation = useNavigation<ProfileScreenNavigationProp>();
@@ -34,7 +39,6 @@ export default function ProfileScreen() {
       try {
         const token = await AsyncStorage.getItem("token");
         if (!token) {
-          // If no token, go to ChoiceScreen
           navigation.reset({ index: 0, routes: [{ name: "ChoiceScreen" }] });
           return;
         }
@@ -48,7 +52,7 @@ export default function ProfileScreen() {
         });
 
         const data = await res.json();
-        if (res.ok) setUserInfo(data.user);
+        if (res.ok && data.user) setUserInfo(data.user);
         else console.error("Error fetching profile:", data.error);
       } catch (err) {
         console.error("Fetch failed:", err);
@@ -72,11 +76,13 @@ export default function ProfileScreen() {
     }
   };
 
-  const menuItems = [
-    { icon: Settings, title: 'Account Settings', subtitle: 'Manage your account preferences', color: '#6B7280' },
-    { icon: Bell, title: 'Notifications', subtitle: 'Configure notification settings', color: '#F59E0B' },
-    { icon: HelpCircle, title: 'Help & Support', subtitle: 'Get help and contact support', color: '#FF4500' },
-  ];
+  const getInitials = (name: string) => {
+    return name
+      ?.split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase();
+  };
 
   if (loading)
     return (
@@ -88,50 +94,74 @@ export default function ProfileScreen() {
   if (!userInfo)
     return (
       <SafeAreaView style={styles.container}>
-        <Text style={{ textAlign: "center", marginTop: 50 }}>Failed to load profile</Text>
+        <Text style={{ textAlign: "center", marginTop: 50 }}>
+          Failed to load profile
+        </Text>
       </SafeAreaView>
     );
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      <ScrollView showsVerticalScrollIndicator={false}>
+
         {/* Header */}
         <View style={styles.header}>
-          <User size={24} color="#FF4500" />
+          <LinearGradient
+            colors={['#FF7E5F', '#FF4500']}
+            style={styles.headerIcon}
+          >
+            <User size={24} color="#fff" />
+          </LinearGradient>
           <Text style={styles.headerTitle}>Profile</Text>
         </View>
 
         {/* Profile Card */}
         <View style={styles.profileCard}>
           <View style={styles.avatarContainer}>
-            <View style={styles.avatar}>
-              <User size={40} color="#FFFFFF" />
-            </View>
+            {userInfo?.avatar_url ? (
+              <Image source={{ uri: userInfo.avatar_url }} style={styles.avatar} />
+            ) : (
+              <View style={styles.avatarFallback}>
+                <Text style={styles.avatarInitials}>
+                  {getInitials(userInfo?.full_name || "U")}
+                </Text>
+              </View>
+            )}
           </View>
+
           <View style={styles.profileInfo}>
             <Text style={styles.profileName}>{userInfo.full_name}</Text>
             <Text style={styles.profileId}>Student ID: {userInfo.id}</Text>
             <Text style={styles.profileJoinDate}>
-              Member since {userInfo.join_date ? new Date(userInfo.join_date).toLocaleDateString() : "N/A"}
+              Member since{" "}
+              {userInfo.join_date
+                ? new Date(userInfo.join_date).toLocaleDateString()
+                : "N/A"}
             </Text>
           </View>
         </View>
 
-        {/* Contact Information */}
+        {/* Contact Info */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Contact Information</Text>
           <View style={styles.contactCard}>
-            <ContactItem icon={Mail} label="Email" value={userInfo.email} color="#10B981" />
+            <ContactItem
+              icon={Mail}
+              label="Email"
+              value={userInfo.email}
+              colors={['#10B981', '#34D399']}
+            />
           </View>
         </View>
 
-        {/* Logout Button */}
+        {/* Logout */}
         <View style={styles.section}>
           <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
             <LogOut size={20} color="#EF4444" />
             <Text style={styles.logoutText}>Sign Out</Text>
           </TouchableOpacity>
         </View>
+
       </ScrollView>
     </SafeAreaView>
   );
@@ -141,15 +171,15 @@ interface ContactItemProps {
   icon: React.ComponentType<any>;
   label: string;
   value: string;
-  color: string;
+  colors: string[];
 }
 
-function ContactItem({ icon: Icon, label, value, color }: ContactItemProps) {
+function ContactItem({ icon: Icon, label, value, colors }: ContactItemProps) {
   return (
     <View style={styles.contactItem}>
-      <View style={[styles.contactIcon, { backgroundColor: color }]}>
-        <Icon size={16} color="#FFFFFF" />
-      </View>
+      <LinearGradient colors={colors} style={styles.contactIcon}>
+        <Icon size={16} color="#fff" />
+      </LinearGradient>
       <View style={styles.contactInfo}>
         <Text style={styles.contactLabel}>{label}</Text>
         <Text style={styles.contactValue}>{value}</Text>
@@ -160,54 +190,115 @@ function ContactItem({ icon: Icon, label, value, color }: ContactItemProps) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F9FAFB' },
-  scrollView: { flex: 1 },
-  header: { flexDirection: 'row', alignItems: 'center', padding: 24, paddingBottom: 16 },
-  headerTitle: { fontSize: 24, fontWeight: 'bold', color: '#111827', marginLeft: 12 },
+
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 24,
+  },
+  headerIcon: {
+    width: 50,
+    height: 50,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerTitle: {
+    fontSize: 26,
+    fontWeight: '700',
+    marginLeft: 12,
+    color: '#111827',
+  },
+
   profileCard: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
+    backgroundColor: "#fff",
+    borderRadius: 20,
     padding: 24,
     marginHorizontal: 24,
-    marginBottom: 24,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+    marginTop: 16,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 4,
   },
+
   avatarContainer: { marginBottom: 16 },
-  avatar: { width: 80, height: 80, borderRadius: 40, backgroundColor: '#FF4500', alignItems: 'center', justifyContent: 'center' },
-  profileInfo: { alignItems: 'center' },
-  profileName: { fontSize: 24, fontWeight: 'bold', color: '#111827', marginBottom: 4 },
-  profileId: { fontSize: 14, color: '#6B7280', marginBottom: 4 },
-  profileJoinDate: { fontSize: 12, color: '#9CA3AF' },
-  section: { padding: 24, paddingTop: 0 },
-  sectionTitle: { fontSize: 18, fontWeight: '600', color: '#111827', marginBottom: 16 },
+  avatar: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    borderWidth: 2,
+    borderColor: "#FF7E5F",
+  },
+  avatarFallback: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: "#FF7E5F",
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#fff',
+  },
+  avatarInitials: { color: "#fff", fontSize: 32, fontWeight: "bold" },
+
+  profileInfo: { alignItems: "center" },
+  profileName: { fontSize: 22, fontWeight: "700", color: "#111827" },
+  profileId: { fontSize: 14, color: "#6B7280", marginTop: 2 },
+  profileJoinDate: { fontSize: 12, color: "#9CA3AF", marginTop: 2 },
+
+  section: { paddingHorizontal: 24, paddingTop: 24 },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#111827",
+    marginBottom: 12,
+  },
+
   contactCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#fff",
     borderRadius: 16,
     padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowColor: "#000",
     shadowOpacity: 0.05,
+    shadowOffset: { width: 0, height: 4 },
     shadowRadius: 8,
     elevation: 2,
   },
-  contactItem: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#F3F4F6' },
-  contactIcon: { width: 32, height: 32, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
+  contactItem: { flexDirection: "row", alignItems: "center", paddingVertical: 12 },
+  contactIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   contactInfo: { flex: 1, marginLeft: 12 },
-  contactLabel: { fontSize: 12, color: '#6B7280', marginBottom: 2 },
-  contactValue: { fontSize: 14, color: '#111827', fontWeight: '500' },
+  contactLabel: { fontSize: 12, color: "#6B7280", marginBottom: 2 },
+  contactValue: { fontSize: 14, fontWeight: "500", color: "#111827" },
+
   logoutButton: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 16,
-    padding: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#fff',
+    padding: 16,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: '#FEE2E2',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+    marginBottom: 40,
   },
-  logoutText: { fontSize: 16, fontWeight: '600', color: '#EF4444', marginLeft: 8 },
+  logoutText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#EF4444',
+    marginLeft: 8,
+  },
 });

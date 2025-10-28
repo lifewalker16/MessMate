@@ -9,122 +9,159 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
+import { MotiView } from "moti";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const ChoiceScreen: React.FC = () => {
   const router = useRouter();
 
   return (
-    <View style={styles.container}>
-      <View style={styles.card}>
-        {/* 🧩 Logo */}
-        <View style={styles.logoContainer}>
-          <Image
-            source={require("../assets/images/logo.png") as ImageSourcePropType}
-            style={styles.logo}
-            resizeMode="contain"
-          />
-        </View>
-
-        {/* 🏷️ Titles */}
-        <Text style={styles.title}>Welcome to MessMate</Text>
-        <Text style={styles.subtitle}>
-          Please select your login type to continue
-        </Text>
-
-        {/* 🔸 Student Login (same gradient as login.tsx) */}
-        <TouchableOpacity
-          onPress={() => router.push("/(auth)/login")}
-          style={{ width: "100%", marginTop: 10 }}
+    <LinearGradient
+      colors={["#FFF3E2", "#FFD1BA"]}
+      style={styles.gradientBackground}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+    >
+      <SafeAreaView style={styles.safeArea}>
+        <MotiView
+          from={{ opacity: 0, translateY: 30 }}
+          animate={{ opacity: 1, translateY: 0 }}
+          transition={{ type: "timing", duration: 700 }}
+          style={styles.card}
         >
+          {/* 🧩 Logo */}
+          <View style={styles.logoContainer}>
+            <Image
+              source={require("../assets/images/logo.png") as ImageSourcePropType}
+              style={styles.logo}
+              resizeMode="contain"
+            />
+          </View>
+
+          {/* 🏷️ Titles */}
+          <Text style={styles.title}>Welcome to MessMate</Text>
+          <Text style={styles.subtitle}>
+            Choose your login type to get started
+          </Text>
+
+          {/* 🔸 Student Login */}
+          <TouchableOpacity
+            onPress={() => router.push("/(auth)/login")}
+            activeOpacity={0.8}
+            style={{ width: "100%", marginTop: 10 }}
+          >
+            <LinearGradient
+              colors={["#FF7E5F", "#FF4500"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.button}
+            >
+              <Text style={styles.buttonText}>Student Login</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+
+          {/* ⚫ Admin Login */}
+          <TouchableOpacity
+            onPress={() => router.push("/A/al")}
+            activeOpacity={0.8}
+            style={{ width: "100%", marginTop: 15 }}
+          >
+            <LinearGradient
+              colors={["#232526", "#414345"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.button}
+            >
+              <Text style={styles.buttonText}>Admin Login</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+
+          {/* Footer */}
           <LinearGradient
             colors={["#FF7E5F", "#FF4500"]}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
-            style={styles.button}
+            style={styles.footerGradient}
           >
-            <Text style={styles.buttonText}>Student Login</Text>
+            <Text style={styles.footerNote}>© 2025 MessMate</Text>
           </LinearGradient>
-        </TouchableOpacity>
-
-        {/* ⚫ Admin Login (gradient black shade) */}
-        <TouchableOpacity
-          onPress={() => router.push("/A/al")}
-          style={{ width: "100%", marginTop: 15 }}
-        >
-          <LinearGradient
-            colors={["#434343", "#000000"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.button}
-          >
-            <Text style={styles.buttonText}>Admin Login</Text>
-          </LinearGradient>
-        </TouchableOpacity>
-
-        <Text style={styles.footerNote}>© 2025 MessMate</Text>
-      </View>
-    </View>
+        </MotiView>
+      </SafeAreaView>
+    </LinearGradient>
   );
 };
 
 export default ChoiceScreen;
 
 const styles = StyleSheet.create({
-  container: {
+  gradientBackground: {
+    flex: 1,
+  },
+  safeArea: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#fffaf5",
-    padding: 20,
   },
   card: {
-    width: "100%",
-    backgroundColor: "white",
-    borderRadius: 12,
-    padding: 20,
+    width: "90%",
+    backgroundColor: "rgba(255, 255, 255, 0.85)",
+    borderRadius: 18,
+    padding: 25,
     shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 5 },
-    shadowRadius: 10,
-    elevation: 5,
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 10 },
+    shadowRadius: 15,
+    elevation: 10,
     alignItems: "center",
   },
   logoContainer: {
     alignItems: "center",
     justifyContent: "center",
-    marginBottom: 15,
+    marginBottom: 20,
   },
   logo: {
-    width: 80,
-    height: 80,
+    width: 90,
+    height: 90,
   },
   title: {
-    fontSize: 22,
-    fontWeight: "bold",
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#333",
     marginBottom: 5,
     textAlign: "center",
   },
   subtitle: {
-    fontSize: 14,
-    color: "gray",
-    marginBottom: 20,
+    fontSize: 15,
+    color: "#666",
+    marginBottom: 25,
     textAlign: "center",
   },
   button: {
     width: "100%",
-    padding: 15,
-    borderRadius: 8,
+    paddingVertical: 15,
+    borderRadius: 10,
     alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 6,
   },
   buttonText: {
     color: "white",
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: "600",
+    letterSpacing: 0.5,
+  },
+  footerGradient: {
+    marginTop: 25,
+    paddingVertical: 6,
+    paddingHorizontal: 20,
+    borderRadius: 20,
   },
   footerNote: {
-    marginTop: 20,
-    color: "gray",
-    fontSize: 14,
+    color: "white",
+    fontSize: 13,
     fontWeight: "600",
   },
 });

@@ -34,10 +34,15 @@ exports.inviteStudent = async (req, res) => {
     await sendInviteEmail(email, full_name, email, password);
     res.status(200).json({ message: "Invitation sent successfully" });
   } catch (error) {
+    if (error.code === "ER_DUP_ENTRY") {
+      console.warn(`⚠️ Student with email ${req.body.email} already exists`);
+      return res.status(409).json({ message: `Student with email ${req.body.email} already exists` });
+    }
     console.error("❌ Error inviting student:", error);
     res.status(500).json({ message: "Failed to invite student", error });
   }
 };
+
 
 // ✅ Get all announcements
 exports.getAnnouncements = async (req, res) => {

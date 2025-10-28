@@ -150,10 +150,13 @@ exports.getTodayMeal = async (req, res) => {
       .toLocaleString("en-US", { weekday: "long" })
       .toLowerCase();
 
-    // ✅ Use promise-based query like other functions
     const [rows] = await db.query(
       `
-      SELECT m.meal_type, f.name, f.price
+      SELECT 
+        m.meal_type, 
+        f.name, 
+        f.price, 
+        f.image_url   -- ✅ add this line
       FROM weekly_menu wm
       JOIN meals m ON wm.meal_id = m.meal_id
       JOIN menu_items mi ON mi.menu_id = wm.menu_id
@@ -163,10 +166,14 @@ exports.getTodayMeal = async (req, res) => {
       [dayOfWeek]
     );
 
-    // Transform data into frontend-friendly structure
     const mealItems = { breakfast: [], lunch: [], dinner: [] };
+
     rows.forEach((row) => {
-      mealItems[row.meal_type].push({ name: row.name, price: row.price });
+      mealItems[row.meal_type].push({
+        name: row.name,
+        price: row.price,
+        image_url: row.image_url, // ✅ include it in JSON
+      });
     });
 
     res.json({ mealItems });
@@ -175,4 +182,5 @@ exports.getTodayMeal = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch today's meals" });
   }
 };
+
 

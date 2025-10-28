@@ -1,7 +1,7 @@
   const bcrypt = require("bcryptjs");
   const jwt = require("jsonwebtoken");
   const db = require("../config/db");
-  const sendOtpEmail = require("../utils/mailer");
+  const {sendOtpEmail} = require("../utils/mailer");
 
   const SECRET_KEY = process.env.SECRET_KEY || "your_secret_key";
 
@@ -180,32 +180,6 @@
     }
   };
 
-
-  // ✅ Profile
-// exports.profile = async (req, res) => {
-//   try {
-//     const userId = req.user.id;
-//     const [results] = await db.query("SELECT user_id, full_name, email FROM users WHERE user_id = ?", [userId]);
-
-//     if (results.length === 0) {
-//       return res.status(404).json({ error: "User not found" });
-//     }
-
-//     const user = results[0];
-
-//     res.json({
-//       message: "✅ Profile data accessed",
-//       user: {
-//         id: user.user_id,
-//         full_name: user.full_name,
-//         email: user.email,
-//       },
-//     });
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ error: "Server error" });
-//   }
-// };
 
 exports.profile = async (req, res) => {
   try {

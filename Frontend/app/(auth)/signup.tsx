@@ -7,14 +7,20 @@ import {
   StyleSheet,
   Image,
   Modal,
+  KeyboardAvoidingView,
+  ScrollView,
+  Platform,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import Checkbox from "expo-checkbox";
 import axios from "axios";
+import { MotiView, MotiText } from "moti";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-// ✅ Custom Alert Component
+// ✅ Alert Modal without bouncing
 function AlertModal({ visible, type, title, message, onClose }) {
   const getIcon = () => {
     switch (type) {
@@ -23,34 +29,60 @@ function AlertModal({ visible, type, title, message, onClose }) {
       case "error":
         return "close-circle";
       default:
-        return "warning";
+        return "alert-circle";
     }
   };
 
   return (
     <Modal transparent visible={visible} animationType="fade">
       <View style={styles.modalOverlay}>
-        <View style={styles.modalCard}>
+        <MotiView
+          from={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 200 }}
+          style={styles.modalCard}
+        >
           <Ionicons
             name={getIcon()}
-            size={50}
-            color={type === "success" ? "green" : type === "error" ? "red" : "orange"}
+            size={56}
+            color={
+              type === "success"
+                ? "#34C759"
+                : type === "error"
+                ? "#FF3B30"
+                : "#FF9500"
+            }
             style={{ marginBottom: 10 }}
           />
-          <Text style={styles.modalTitle}>{title}</Text>
+          <MotiText
+            from={{ opacity: 0, translateY: 10 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{ delay: 150 }}
+            style={styles.modalTitle}
+          >
+            {title}
+          </MotiText>
           <Text style={styles.modalMessage}>{message}</Text>
-          <TouchableOpacity onPress={onClose} style={{ width: "100%", marginTop: 15 }}>
-            <LinearGradient colors={["#FF7E5F", "#FF4500"]} style={styles.modalButton}>
+          <TouchableOpacity
+            onPress={onClose}
+            style={{ width: "100%", marginTop: 15 }}
+          >
+            <LinearGradient
+              colors={["#FF7E5F", "#FF4500"]}
+              style={styles.modalButton}
+            >
               <Text style={styles.modalButtonText}>OK</Text>
             </LinearGradient>
           </TouchableOpacity>
-        </View>
+        </MotiView>
       </View>
     </Modal>
   );
 }
 
 export default function SignupScreen() {
+  const router = useRouter();
+
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState(["", "", "", ""]);
@@ -58,7 +90,6 @@ export default function SignupScreen() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
-  const [focusedInput, setFocusedInput] = useState<string | null>(null);
 
   const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [isOtpVerified, setIsOtpVerified] = useState(false);
@@ -68,6 +99,14 @@ export default function SignupScreen() {
   const [alertTitle, setAlertTitle] = useState("");
   const [alertMessage, setAlertMessage] = useState("");
 
+  const [timer, setTimer] = useState(0);
+  const [verifyingEmail, setVerifyingEmail] = useState(false);
+  const [verifyingOtp, setVerifyingOtp] = useState(false);
+
+  const timerRef = useRef(null);
+  const otpInputs = useRef([]);
+  const API_URL = "http://10.246.134.45:5000";
+
   const showAlert = (type, title, message) => {
     setAlertType(type);
     setAlertTitle(title);
@@ -75,98 +114,13 @@ export default function SignupScreen() {
     setAlertVisible(true);
   };
 
-  // Timer state
-  const [timer, setTimer] = useState(0);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
-
-  const router = useRouter();
-  const otpInputs = useRef<TextInput[]>([]);
-
-  const API_URL = "http://192.168.1.7:5000";
-
-  // Send OTP from backend
-  const handleVerifyEmail = async () => {
-    if (!email) {
-      showAlert("error", "Error", "Please enter your email first.");
-      return;
-    }
-    try {
-      const res = await axios.post(`${API_URL}/verifyEmail`, { email });
-      showAlert("success", "Success", res.data.message);
-      setIsEmailVerified(true);
-      startTimer();
-    } catch (err: any) {
-      console.log("Verify Email Error:", err.response?.data || err.message);
-      showAlert("error", "Error", err.response?.data?.error || "Something went wrong");
-    }
-  };
-
-  const handleResendOtp = async () => {
-    try {
-      const res = await axios.post(`${API_URL}/verifyEmail`, { email });
-      showAlert("success", "OTP Resent", res.data.message);
-      startTimer();
-    } catch (err: any) {
-      showAlert("error", "Error", err.response?.data?.error || "Failed to resend OTP");
-    }
-  };
-
-  const handleVerifyOtp = async () => {
-    const otpCode = otp.join("");
-    if (otpCode.length !== 4) {
-      showAlert("error", "Error", "Please enter the 4-digit OTP.");
-      return;
-    }
-
-    try {
-      const res = await axios.post(`${API_URL}/verifyOtp`, { email, otp: otpCode });
-      showAlert("success", "Success", res.data.message);
-      setIsOtpVerified(true);
-      if (timerRef.current) clearInterval(timerRef.current);
-    } catch (err: any) {
-      showAlert("error", "Error", err.response?.data?.error || "Invalid OTP");
-    }
-  };
-
-  const handleOtpChange = (text: string, index: number) => {
-    const newOtp = [...otp];
-    newOtp[index] = text.slice(-1);
-    setOtp(newOtp);
-    if (text && index < 3) otpInputs.current[index + 1].focus();
-    if (!text && index > 0) otpInputs.current[index - 1].focus();
-  };
-
-  const handleSignup = async () => {
-    if (!agreeTerms) {
-      showAlert("error", "Error", "You must agree to the Terms and Conditions.");
-      return;
-    }
-    if (password !== confirmPassword) {
-      showAlert("error", "Error", "Passwords do not match!");
-      return;
-    }
-
-    try {
-      const res = await axios.post(`${API_URL}/signup`, {
-        full_name: fullName,
-        email,
-        password,
-      });
-      showAlert("success", "Success", res.data.message);
-      setTimeout(() => router.push("/login"), 1500);
-    } catch (err: any) {
-      showAlert("error", "Error", err.response?.data?.error || "Signup failed");
-    }
-  };
-
   const startTimer = () => {
     if (timerRef.current) clearInterval(timerRef.current);
     setTimer(60);
-
     timerRef.current = setInterval(() => {
       setTimer((prev) => {
         if (prev <= 1) {
-          if (timerRef.current) clearInterval(timerRef.current);
+          clearInterval(timerRef.current);
           return 0;
         }
         return prev - 1;
@@ -174,152 +128,291 @@ export default function SignupScreen() {
     }, 1000);
   };
 
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, []);
+  const handleVerifyEmail = async () => {
+    if (!email) return showAlert("error", "Error", "Enter your email first.");
+    setVerifyingEmail(true);
+    try {
+      const res = await axios.post(`${API_URL}/verifyEmail`, { email });
+      setIsEmailVerified(true);
+      startTimer();
+      showAlert("success", "OTP Sent", res.data.message);
+    } catch (err) {
+      showAlert(
+        "error",
+        "Error",
+        err.response?.data?.error || "Something went wrong"
+      );
+    } finally {
+      setVerifyingEmail(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    const otpCode = otp.join("");
+    if (otpCode.length !== 4)
+      return showAlert("error", "Error", "Enter all 4 digits");
+    setVerifyingOtp(true);
+    try {
+      const res = await axios.post(`${API_URL}/verifyOtp`, { email, otp: otpCode });
+      setIsOtpVerified(true);
+      clearInterval(timerRef.current);
+      showAlert("success", "Verified", res.data.message);
+    } catch (err) {
+      showAlert("error", "Error", err.response?.data?.error || "Invalid OTP");
+    } finally {
+      setVerifyingOtp(false);
+    }
+  };
+
+  const handleOtpChange = (text, index) => {
+    const newOtp = [...otp];
+    newOtp[index] = text.slice(-1);
+    setOtp(newOtp);
+    if (text && index < 3) otpInputs.current[index + 1].focus();
+  };
+
+  const handleSignup = async () => {
+    if (!agreeTerms)
+      return showAlert("error", "Error", "You must agree to the Terms.");
+    if (password !== confirmPassword)
+      return showAlert("error", "Error", "Passwords do not match!");
+    try {
+      const res = await axios.post(`${API_URL}/signup`, {
+        full_name: fullName,
+        email,
+        password,
+      });
+      showAlert("success", "Success", res.data.message);
+      setTimeout(() => router.push("/(auth)/login"), 1500);
+    } catch (err) {
+      showAlert("error", "Error", err.response?.data?.error || "Signup failed");
+    }
+  };
+
+  useEffect(() => () => timerRef.current && clearInterval(timerRef.current), []);
 
   return (
-    <View style={styles.container}>
-      <View style={styles.card}>
-        <View style={styles.logoContainer}>
-          <Image
-            source={require("@/assets/images/logo.png")}
-            style={styles.logo}
-            resizeMode="contain"
-          />
-        </View>
+    <LinearGradient
+      colors={["#FFF3E2", "#FFD1BA"]}
+      style={styles.container}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+    >
+      <SafeAreaView style={{ flex: 1, backgroundColor: "transparent" }}>
 
-        <Text style={styles.title}>Create Account</Text>
-        <Text style={styles.subtitle}>Join our hostel mess management system</Text>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1, width: "100%" }}
+      >
+        <ScrollView
+          contentContainerStyle={{
+            flexGrow: 1,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+          showsVerticalScrollIndicator={false}
+        >
+          <MotiView
+            from={{ opacity: 0, translateY: 40 }}
+            animate={{ opacity: 1, translateY: 0 }}
+            transition={{ type: "timing", duration: 600 }}
+            style={styles.card}
+          >
+            <Image
+              source={require("@/assets/images/logo.png")}
+              style={styles.logo}
+            />
+            <Text style={styles.title}>Create Account</Text>
+            <Text style={styles.subtitle}>
+              Join our hostel mess management system
+            </Text>
 
-        {/* Full Name */}
-        <View style={[styles.inputContainer, focusedInput === "fullName" && styles.inputFocused]}>
-          <Ionicons name="person-outline" size={20} color="gray" />
-          <TextInput
-            style={styles.inputField}
-            placeholder="Full Name"
-            value={fullName}
-            onChangeText={setFullName}
-            onFocus={() => setFocusedInput("fullName")}
-            onBlur={() => setFocusedInput(null)}
-          />
-        </View>
-
-        {/* Email + Verify */}
-        <View style={[styles.inputContainer, focusedInput === "email" && styles.inputFocused]}>
-          <Ionicons name="mail-outline" size={20} color="gray" />
-          <TextInput
-            style={[styles.inputField, isEmailVerified && { color: "gray" }]}
-            placeholder="Email Address"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            editable={!isEmailVerified}
-            onFocus={() => setFocusedInput("email")}
-            onBlur={() => setFocusedInput(null)}
-          />
-          {!isEmailVerified && (
-            <TouchableOpacity style={styles.verifyButton} onPress={handleVerifyEmail}>
-              <Text style={styles.verifyText}>Verify</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-
-        {/* OTP */}
-        {isEmailVerified && !isOtpVerified && (
-          <View>
-            <View style={styles.otpContainer}>
-              {otp.map((digit, index) => (
-                <TextInput
-                  key={index}
-                  ref={(ref) => (otpInputs.current[index] = ref!)}
-                  style={styles.inputBox}
-                  keyboardType="number-pad"
-                  maxLength={1}
-                  value={digit}
-                  onChangeText={(text) => handleOtpChange(text, index)}
-                />
-              ))}
-              <TouchableOpacity style={styles.verifyButton} onPress={handleVerifyOtp}>
-                <Text style={styles.verifyText}>Submit</Text>
-              </TouchableOpacity>
+            {/* Full Name */}
+            <View style={styles.inputWrapper}>
+              <Ionicons name="person-outline" size={18} color="#FF7E5F" />
+              <TextInput
+                style={styles.input}
+                placeholder="Full Name"
+                value={fullName}
+                onChangeText={setFullName}
+              />
             </View>
 
-            <View style={styles.resendContainer}>
-              {timer > 0 ? (
-                <Text style={styles.timerText}>Resend available in {timer}s</Text>
-              ) : (
-                <TouchableOpacity onPress={handleResendOtp}>
-                  <Text style={styles.resendText}>Resend OTP</Text>
+            {/* Email */}
+            <View style={styles.inputWrapper}>
+              <Ionicons name="mail-outline" size={18} color="#FF7E5F" />
+              <TextInput
+                style={[styles.input, isEmailVerified && { color: "#999" }]}
+                placeholder="Email Address"
+                value={email}
+                onChangeText={setEmail}
+                editable={!isEmailVerified}
+                keyboardType="email-address"
+              />
+              {!isEmailVerified && (
+                <TouchableOpacity
+                  onPress={handleVerifyEmail}
+                  style={{
+                    marginLeft: 8,
+                    paddingVertical: 6,
+                    paddingHorizontal: 12,
+                    backgroundColor: "#FF4500",
+                    borderRadius: 6,
+                    flexDirection: "row",
+                    alignItems: "center",
+                  }}
+                  disabled={verifyingEmail}
+                >
+                  {verifyingEmail ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                  ) : (
+                    <Text
+                      style={{
+                        color: "#fff",
+                        fontWeight: "600",
+                        fontSize: 13,
+                      }}
+                    >
+                      Verify
+                    </Text>
+                  )}
                 </TouchableOpacity>
               )}
             </View>
-          </View>
-        )}
 
-        {/* Passwords */}
-        {isOtpVerified && (
-          <>
-            <View style={[styles.inputContainer, focusedInput === "password" && styles.inputFocused]}>
-              <Ionicons name="lock-closed-outline" size={20} color="gray" />
-              <TextInput
-                style={styles.inputField}
-                placeholder="Create password"
-                secureTextEntry={!showPassword}
-                value={password}
-                onChangeText={setPassword}
-                onFocus={() => setFocusedInput("password")}
-                onBlur={() => setFocusedInput(null)}
-              />
-              <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                <Ionicons name={showPassword ? "eye-off" : "eye"} size={22} color="gray" />
-              </TouchableOpacity>
-            </View>
+            {/* OTP Section */}
+            {isEmailVerified && !isOtpVerified && (
+              <>
+                <View style={styles.otpRow}>
+                  {otp.map((d, i) => (
+                    <TextInput
+                      key={i}
+                      ref={(ref) => (otpInputs.current[i] = ref)}
+                      style={styles.otpInput}
+                      keyboardType="number-pad"
+                      maxLength={1}
+                      value={d}
+                      onChangeText={(text) => handleOtpChange(text, i)}
+                    />
+                  ))}
+                  <TouchableOpacity
+                    onPress={handleVerifyOtp}
+                    style={{
+                      marginLeft: 8,
+                      paddingVertical: 6,
+                      paddingHorizontal: 12,
+                      backgroundColor: "#FF4500",
+                      borderRadius: 6,
+                      flexDirection: "row",
+                      alignItems: "center",
+                    }}
+                    disabled={verifyingOtp}
+                  >
+                    {verifyingOtp ? (
+                      <ActivityIndicator size="small" color="#fff" />
+                    ) : (
+                      <Text style={{ color: "#fff", fontWeight: "600", fontSize: 13 }}>
+                        Submit
+                      </Text>
+                    )}
+                  </TouchableOpacity>
+                </View>
+                <View style={{ alignItems: "center", marginBottom: 10 }}>
+                  {timer > 0 ? (
+                    <Text style={styles.timerText}>Resend in {timer}s</Text>
+                  ) : (
+                    <TouchableOpacity onPress={handleVerifyEmail}>
+                      <Text style={styles.resendText}>Resend OTP</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              </>
+            )}
 
-            <View style={[styles.inputContainer, focusedInput === "confirmPassword" && styles.inputFocused]}>
-              <Ionicons name="checkmark-done-outline" size={20} color="gray" />
-              <TextInput
-                style={styles.inputField}
-                placeholder="Confirm password"
-                secureTextEntry
-                value={confirmPassword}
-                onChangeText={setConfirmPassword}
-                onFocus={() => setFocusedInput("confirmPassword")}
-                onBlur={() => setFocusedInput(null)}
-              />
-            </View>
+            {/* Passwords */}
+            {isOtpVerified && (
+              <>
+                <View style={styles.inputWrapper}>
+                  <Ionicons
+                    name="lock-closed-outline"
+                    size={18}
+                    color="#FF7E5F"
+                  />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Create Password"
+                    secureTextEntry={!showPassword}
+                    value={password}
+                    onChangeText={setPassword}
+                  />
+                  <TouchableOpacity
+                    onPress={() => setShowPassword(!showPassword)}
+                  >
+                    <Ionicons
+                      name={showPassword ? "eye-off" : "eye"}
+                      size={20}
+                      color="#777"
+                    />
+                  </TouchableOpacity>
+                </View>
 
-            <View style={styles.checkboxContainer}>
-              <Checkbox value={agreeTerms} onValueChange={setAgreeTerms} color={agreeTerms ? "#FF7E5F" : undefined} />
-              <Text style={styles.checkboxText}>
-                I agree to the <Text style={styles.link}>Terms and Conditions</Text>
-              </Text>
-            </View>
+                <View style={styles.inputWrapper}>
+                  <Ionicons
+                    name="checkmark-done-outline"
+                    size={18}
+                    color="#FF7E5F"
+                  />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Confirm Password"
+                    secureTextEntry
+                    value={confirmPassword}
+                    onChangeText={setConfirmPassword}
+                  />
+                </View>
 
-            <TouchableOpacity onPress={handleSignup} style={{ marginTop: 15 }} disabled={!agreeTerms}>
-              <LinearGradient
-                colors={["#FF7E5F", "#FF4500"]}
-                style={[styles.button, !agreeTerms && { opacity: 0.5 }]}
+                <View style={styles.checkboxRow}>
+                  <Checkbox
+                    value={agreeTerms}
+                    onValueChange={setAgreeTerms}
+                    color={agreeTerms ? "#FF7E5F" : undefined}
+                  />
+                  <Text style={styles.checkboxText}>
+                    I agree to the{" "}
+                    <Text style={styles.link}>Terms and Conditions</Text>
+                  </Text>
+                </View>
+
+                <TouchableOpacity
+                  onPress={handleSignup}
+                  disabled={!agreeTerms}
+                  style={{ width: "100%", marginTop: 10 }}
+                >
+                  <LinearGradient
+                    colors={["#FF7E5F", "#FF4500"]}
+                    style={[styles.button, !agreeTerms && { opacity: 0.6 }]}
+                  >
+                    <Text style={styles.buttonText}>Create Account</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              </>
+            )}
+
+            <Text style={styles.footerText}>
+              Already have an account?{" "}
+              <Text
+                style={styles.link}
+                onPress={() => router.push("/(auth)/login")}
               >
-                <Text style={styles.buttonText}>Create Account</Text>
-              </LinearGradient>
-            </TouchableOpacity>
-          </>
-        )}
+                Sign in
+              </Text>
+            </Text>
+          </MotiView>
 
-        <Text style={styles.footer}>
-          Already have an account? {" "}
-          <Text style={styles.link} onPress={() => router.push("/(auth)/login")}>
-            Sign in here
-          </Text>
-        </Text>
-      </View>
+          <Text style={styles.footerNote}>© 2025 MessMate</Text>
+        </ScrollView>
+      </KeyboardAvoidingView>
 
-      <Text style={styles.appFooter}>MessMate</Text>
-
-      {/* ✅ Custom Alert Modal */}
       <AlertModal
         visible={alertVisible}
         type={alertType}
@@ -327,40 +420,112 @@ export default function SignupScreen() {
         message={alertMessage}
         onClose={() => setAlertVisible(false)}
       />
-    </View>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
 
+// Styles remain same as before
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#fffaf5" },
-  card: { width: "90%", backgroundColor: "white", borderRadius: 16, padding: 22, shadowColor: "#000", shadowOpacity: 0.12, shadowRadius: 8, elevation: 6 },
-  logoContainer: { alignItems: "center", justifyContent: "center", marginBottom: 10 },
-  logo: { width: 90, height: 90 },
-  title: { fontSize: 22, fontWeight: "700", textAlign: "center", marginBottom: 4 },
-  subtitle: { textAlign: "center", marginBottom: 18, color: "gray", fontSize: 14 },
-  inputContainer: { flexDirection: "row", alignItems: "center", borderWidth: 1, borderColor: "#ddd", borderRadius: 10, paddingHorizontal: 10, marginBottom: 15, backgroundColor: "#fafafa" },
-  inputField: { flex: 1, padding: 12 },
-  inputFocused: { borderColor: "#FF7E5F" },
-  button: { width: "100%", padding: 15, borderRadius: 10, alignItems: "center", shadowColor: "#000", shadowOpacity: 0.15, shadowRadius: 4, elevation: 4 },
-  buttonText: { color: "white", fontSize: 17, fontWeight: "600", letterSpacing: 0.5 },
-  checkboxContainer: { flexDirection: "row", alignItems: "center", marginBottom: 15 },
-  checkboxText: { marginLeft: 8, color: "gray", fontSize: 13 },
-  link: { color: "#FF4500", fontWeight: "600" },
-  footer: { textAlign: "center", marginTop: 15, color: "gray", fontSize: 14 },
-  appFooter: { textAlign: "center", marginTop: 12, color: "gray", fontSize: 14,fontWeight:600 },
-  verifyButton: { backgroundColor: "#FF7E5F", paddingHorizontal: 10, paddingVertical: 5, borderRadius: 6, marginLeft: 6 },
-  verifyText: { color: "white", fontWeight: "600", fontSize: 13 },
-  otpContainer: { flexDirection: "row", justifyContent: "space-between", marginBottom: 10, alignItems: "center" },
-  inputBox: { borderWidth: 1, borderColor: "#ddd", borderRadius: 8, width: 50, height: 50, textAlign: "center", fontSize: 18 },
-  resendContainer: { alignItems: "center", marginBottom: 15 },
-  resendText: { color: "#FF4500", fontWeight: "600", fontSize: 14 },
-  timerText: { color: "gray", fontSize: 13 },
-
-  // ✅ Modal Styles
-  modalOverlay: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "rgba(0,0,0,0.4)" },
-  modalCard: { width: "80%", backgroundColor: "white", borderRadius: 16, padding: 20, alignItems: "center", shadowColor: "#000", shadowOpacity: 0.25, shadowOffset: { width: 0, height: 2 }, shadowRadius: 10, elevation: 10 },
-  modalTitle: { fontSize: 18, fontWeight: "bold", marginBottom: 5, textAlign: "center" },
-  modalMessage: { fontSize: 14, color: "gray", textAlign: "center" },
-  modalButton: { padding: 12, borderRadius: 10, alignItems: "center" },
-  modalButtonText: { color: "white", fontWeight: "bold", fontSize: 16 },
+  container: { flex: 1 },
+  card: {
+    width: "90%",
+    backgroundColor: "rgba(255,255,255,0.95)",
+    borderRadius: 18,
+    padding: 25,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 8,
+  },
+  logo: { width: 90, height: 90, marginBottom: 12 },
+  title: { fontSize: 24, fontWeight: "700", color: "#333", marginBottom: 4 },
+  subtitle: {
+    fontSize: 14,
+    color: "#666",
+    textAlign: "center",
+    marginBottom: 25,
+  },
+  inputWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    marginBottom: 15,
+    backgroundColor: "#fff",
+    width: "100%",
+  },
+  input: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    fontSize: 14,
+    color: "#333",
+  },
+  verifyText: { color: "#FF4500", fontWeight: "600", fontSize: 13, marginLeft: 8 },
+  otpRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 10,
+  },
+  otpInput: {
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    width: 45,
+    height: 45,
+    textAlign: "center",
+    fontSize: 18,
+    marginHorizontal: 4,
+    backgroundColor: "#fff",
+  },
+  resendText: { color: "#FF4500", fontWeight: "600", fontSize: 13 },
+  timerText: { color: "#666", fontSize: 13 },
+  checkboxRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 15,
+    alignSelf: "flex-start",
+  },
+  checkboxText: { marginLeft: 8, fontSize: 13, color: "#555" },
+  link: { color: "#FF4500", fontWeight: "700" },
+  button: {
+    width: "100%",
+    paddingVertical: 15,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#FF4500",
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+  },
+  buttonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
+  footerText: { marginTop: 18, fontSize: 14, color: "#555" },
+  footerNote: { marginTop: 25, color: "#666", fontSize: 13, fontWeight: "500" },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.35)",
+  },
+  modalCard: {
+    width: "80%",
+    backgroundColor: "#fff",
+    borderRadius: 18,
+    padding: 20,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.25,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 8,
+    elevation: 10,
+  },
+  modalTitle: { fontSize: 18, fontWeight: "700", color: "#333", marginBottom: 6 },
+  modalMessage: { fontSize: 14, color: "#666", textAlign: "center" },
+  modalButton: { padding: 12, borderRadius: 10, alignItems: "center", width: "100%" },
+  modalButtonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
 });
