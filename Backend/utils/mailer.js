@@ -135,3 +135,8 @@ const sendMealAttendanceEmail = async (to, meal, count) => {
 };
 
 module.exports = { sendInviteEmail, sendOtpEmail, sendMealAttendanceEmail };
+
+
+
+
+
