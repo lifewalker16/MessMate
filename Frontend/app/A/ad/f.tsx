@@ -78,7 +78,7 @@ const Feedback: React.FC = () => {
   const fetchFeedback = async () => {
     try {
       setLoading(true);
-      const response = await fetch("http://10.246.134.45:5000/feedback/getPendingFeedback", {
+      const response = await fetch("http://192.168.1.3:5000/feedback/getPendingFeedback", {
         method: "GET",
         headers: { "Content-Type": "application/json" },
       });
@@ -102,7 +102,7 @@ const Feedback: React.FC = () => {
       setFeedback((prev) =>
         prev.map((f) => (f.feedback_id === id ? { ...f, status: "Reviewed" } : f))
       );
-      await fetch(`http://10.246.134.45:5000/feedback/updateStatus/${id}`, {
+      await fetch(`http://192.168.1.3:5000/feedback/updateStatus/${id}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: "Reviewed" }),

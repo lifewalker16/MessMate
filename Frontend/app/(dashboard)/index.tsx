@@ -136,7 +136,7 @@ const [mealItems, setMealItems] = useState<{
     try {
       const totalAmount = mealItems[meal].reduce((sum, item) => sum + Number(item.price), 0);
 
-      const response = await fetch("http://10.246.134.45:5000/dashboard/attendance/mark", {
+      const response = await fetch("http://192.168.1.3:5000/dashboard/attendance/mark", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -167,7 +167,7 @@ const [mealItems, setMealItems] = useState<{
         const token = await AsyncStorage.getItem("token");
         if (!token) return;
 
-        const response = await fetch("http://10.246.134.45:5000/profile", {
+        const response = await fetch("http://192.168.1.3:5000/profile", {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await response.json();
@@ -189,7 +189,7 @@ const [mealItems, setMealItems] = useState<{
       if (!token) return;
 
       try {
-        const response = await fetch("http://10.246.134.45:5000/dashboard/attendance/today", {
+        const response = await fetch("http://192.168.1.3:5000/dashboard/attendance/today", {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await response.json();
@@ -212,7 +212,7 @@ const [mealItems, setMealItems] = useState<{
   useEffect(() => {
     const fetchAnnouncements = async () => {
       try {
-        const response = await fetch("http://10.246.134.45:5000/announcements");
+        const response = await fetch("http://192.168.1.3:5000/announcements");
         const data = await response.json();
         if (response.ok || response.status === 200) {
           setAnnouncements(data);
@@ -245,7 +245,7 @@ const [mealItems, setMealItems] = useState<{
       if (!token || !storedUser) return;
 
       const u = JSON.parse(storedUser);
-      const response = await fetch(`http://10.246.134.45:5000/expense/summary/${u.id}`, {
+      const response = await fetch(`http://192.168.1.3:5000/expense/summary/${u.id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await response.json();
@@ -266,7 +266,7 @@ const [mealItems, setMealItems] = useState<{
     if (!token) return;
 
     try {
-      const response = await fetch("http://10.246.134.45:5000/dashboard/weekly-attendance", {
+      const response = await fetch("http://192.168.1.3:5000/dashboard/weekly-attendance", {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await response.json();
@@ -288,7 +288,7 @@ const [mealItems, setMealItems] = useState<{
       if (!token) return;
 
       try {
-        const response = await fetch("http://10.246.134.45:5000/dashboard/today-meal", {
+        const response = await fetch("http://192.168.1.3:5000/dashboard/today-meal", {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await response.json();

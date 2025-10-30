@@ -15,7 +15,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 
-const API_BASE_URL = "http://10.246.134.45:5000";
+const API_BASE_URL = "http://192.168.1.3:5000";
 
 type RootStackParamList = {
   Login: undefined;

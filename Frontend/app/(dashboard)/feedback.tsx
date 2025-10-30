@@ -71,7 +71,7 @@ export default function FeedbackScreen() {
   const fetchRecentFeedback = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
-      const res = await fetch("http://10.246.134.45:5000/feedback/getUserFeedback", {
+      const res = await fetch("http://192.168.1.3:5000/feedback/getUserFeedback", {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
@@ -94,7 +94,7 @@ export default function FeedbackScreen() {
     try {
       const token = await AsyncStorage.getItem("token");
       const response = await fetch(
-        "http://10.246.134.45:5000/feedback/submitFeedback",
+        "http://192.168.1.3:5000/feedback/submitFeedback",
         {
           method: "POST",
           headers: {
