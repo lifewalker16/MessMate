@@ -16,7 +16,7 @@ import axios from "axios";
 
 type Announcement = { id: number; title: string; content: string };
 
-const API_URL = "http://192.168.1.3:5000";
+const API_URL = "http://10.246.134.45:5000";
 
 // ✅ Reusable Alert Modal
 function AlertModal({ visible, type, title, message, onClose }: any) {

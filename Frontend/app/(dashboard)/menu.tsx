@@ -31,7 +31,7 @@ export default function MenuScreen() {
 
   const fetchMenu = async () => {
     try {
-      const res = await fetch("http://192.168.1.3:5000/menu/weekly");
+      const res = await fetch("http://10.246.134.45:5000/menu/weekly");
       if (!res.ok) return;
       const data = await res.json();
       const convertedMenu: any = Object.fromEntries(

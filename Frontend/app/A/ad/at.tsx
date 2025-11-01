@@ -16,7 +16,7 @@ const AttendanceCountModule = () => {
     const fetchAttendanceCounts = async () => {
       try {
         const res = await axios.get(
-          "http://192.168.1.3:5000/api/admin/attendance/today-students"
+          "http://10.246.134.45:5000/api/admin/attendance/today-students"
         );
         setCounts({
           breakfast: res.data.breakfast.length,
@@ -34,7 +34,7 @@ const AttendanceCountModule = () => {
     const fetchEmailStatus = async () => {
       try {
         const res = await axios.get(
-          "http://192.168.1.3:5000/api/admin/attendance/email-status"
+          "http://10.246.134.45:5000/api/admin/attendance/email-status"
         );
         setEmailStatus(res.data);
       } catch (err) {

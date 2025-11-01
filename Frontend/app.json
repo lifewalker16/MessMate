@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": "Frontend",
+    "name": "MessMate",
     "slug": "Frontend",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/logo.png",
     "scheme": "frontend",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -28,7 +28,7 @@
       "expo-router",
       [
         "expo-splash-screen",
-        {  
+        {
           "image": "./assets/images/logo.png",
           "backgroundColor": "#ffffff",
           "resizeMode": "contain"
@@ -37,6 +37,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "56d8ffc9-e2ba-468b-b676-7299600f9c87"
+      }
     }
   }
 }

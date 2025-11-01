@@ -105,7 +105,7 @@ export default function SignupScreen() {
 
   const timerRef = useRef(null);
   const otpInputs = useRef([]);
-  const API_URL = "http://192.168.1.3:5000";
+  const API_URL = "http://10.246.134.45:5000";
 
   const showAlert = (type, title, message) => {
     setAlertType(type);
