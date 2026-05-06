@@ -47,12 +47,20 @@ The system connects both **students** and **mess administrators** through a sing
 <table align='center'>
   <tr>
     <td align="center">
+      <img src="./assets/splash.jpeg" width="170"><br>
+      <b>Choose Role UI</b>
+    </td>
+    <td align="center">
       <img src="./assets/Choose.jpeg" width="170"><br>
       <b>Choose Role UI</b>
     </td>
     <td align="center">
       <img src="./assets/login.jpeg" width="170"><br>
       <b>Login UI</b>
+    </td>
+    <td align="center">
+      <img src="./assets/admin.jpeg" width="170"><br>
+      <b>Choose Role UI</b>
     </td>
   </tr>
 </table>
