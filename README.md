@@ -58,7 +58,7 @@ The system connects both **students** and **mess administrators** through a sing
 
 <br>
 
-<table>
+<table align='center'>
   <tr>
     <td align="center">
       <img src="./assets/dashboard.jpeg" width="170"><br>
@@ -85,7 +85,7 @@ The system connects both **students** and **mess administrators** through a sing
 
 <br>
 
-<table>
+<table align='center'>
   <tr>
     <td align="center">
       <img src="./assets/invite.jpeg" width="170"><br>
