@@ -95,6 +95,14 @@ The system connects both **students** and **mess administrators** through a sing
 <br>
 <table align='center'>
   <tr>
+     <td align="center">
+      <img src="./assets/Announcement.jpeg" width="170"><br>
+      <b>Add Announcement</b>
+    </td>
+     <td align="center">
+      <img src="./assets/MenuAd.jpeg" width="170"><br>
+      <b>Set Menu</b>
+    </td>
     <td align="center">
       <img src="./assets/inviteAd.jpeg" width="170"><br>
       <b>Send Invite</b>
@@ -106,10 +114,6 @@ The system connects both **students** and **mess administrators** through a sing
       <td align="center">
       <img src="./assets/attendanceAd.jpeg" width="170"><br>
       <b>View Attendance</b>
-    </td>
-    <td align="center">
-      <img src="./assets/sidebarAd.jpeg" width="170"><br>
-      <b>Sidebar UI</b>
     </td>
   </tr>
 </table>
