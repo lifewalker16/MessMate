@@ -83,10 +83,6 @@ The system connects both **students** and **mess administrators** through a sing
       <img src="./assets/profile.jpeg" width="170"><br>
       <b>Profile UI</b>
     </td>
-    <td align="center">
-      <img src="./assets/kitchen.jpeg" width="170"><br>
-      <b>Meal Attendance UI</b>
-    </td>
   </tr>
 </table>
 
@@ -97,6 +93,10 @@ The system connects both **students** and **mess administrators** through a sing
     <td align="center">
       <img src="./assets/invite.jpeg" width="250"><br>
       <b>Email Invite System</b>
+    </td>
+    <td align="center">
+      <img src="./assets/kitchen.jpeg" width="170"><br>
+      <b>Meal Attendance UI</b>
     </td>
   </tr>
 </table>
