@@ -44,58 +44,20 @@ The system connects both **students** and **mess administrators** through a sing
 
 # 📱 Application UI Screenshots
 
-## 🔐 Login Screen
 <p align="center">
-  <img src="./assets/login.jpeg" width="250"/>
+  <img src="./assets/login.jpeg" width="220"/><br>
+  <b>Login UI</b>
 </p>
 
----
-
-## 📊 Dashboard UI
 <p align="center">
-  <img src="./assets/dashboard.jpeg" width="250"/>
+  <img src="./assets/dashboard.jpeg" width="220"/>
+  <img src="./assets/expense.jpeg" width="220"/>
+  <img src="./assets/menu.jpeg" width="220"/>
+  <img src="./assets/feedback.jpeg" width="220"/>
 </p>
 
----
-
-## 💰 Expense / Billing UI
 <p align="center">
-  <img src="./assets/expense.jpeg" width="250"/>
+  <img src="./assets/profile.jpeg" width="220"/>
+  <img src="./assets/invite.jpeg" width="220"/>
+  <img src="./assets/kitchen.jpeg" width="220"/>
 </p>
-
----
-
-## 🍽️ Menu UI
-<p align="center">
-  <img src="./assets/menu.jpeg" width="250"/>
-</p>
-
----
-
-## 💬 Feedback UI
-<p align="center">
-  <img src="./assets/feedback.jpeg" width="250"/>
-</p>
-
----
-
-## 👤 Profile UI
-<p align="center">
-  <img src="./assets/profile.jpeg" width="250"/>
-</p>
-
----
-
-## 📧 Student Invite via Email
-<p align="center">
-  <img src="./assets/invite.jpeg" width="500"/>
-</p>
-
----
-
-## ✅ Meal Attendance UI
-<p align="center">
-  <img src="./assets/kitchen.jpeg" width="250"/>
-</p>
-
----
