@@ -43,21 +43,67 @@ The system connects both **students** and **mess administrators** through a sing
 ---
 # 📱 Application UI Screenshots
 
-<p align="center">
-  <img src="./assets/Choose.jpeg" width="170"/>
-  <img src="./assets/login.jpeg" width="170"/>
-  <b>Login UI</b>
-</p>
+<table align="center">
+  <tr>
+    <td align="center">
+      <img src="./assets/Choose.jpeg" width="170"/><br/>
+      <b>Choose Role UI</b>
+    </td>
 
-<p align="center">
-  <img src="./assets/dashboard.jpeg" width="170"/>
-  <img src="./assets/expense.jpeg" width="170"/>
-  <img src="./assets/menu.jpeg" width="170"/>
-  <img src="./assets/feedback.jpeg" width="170"/>
-  <img src="./assets/profile.jpeg" width="170"/>
-</p>
+    <td align="center">
+      <img src="./assets/login.jpeg" width="170"/><br/>
+      <b>Login UI</b>
+    </td>
+  </tr>
+</table>
 
-<p align="center">
-  <img src="./assets/invite.jpeg" width="170"/>
-  <img src="./assets/kitchen.jpeg" width="170"/>
-</p>
+<br/>
+
+<table align="center">
+  <tr>
+    <td align="center">
+      <img src="./assets/dashboard.jpeg" width="170"/><br/>
+      <b>Dashboard UI</b>
+    </td>
+
+    <td align="center">
+      <img src="./assets/expense.jpeg" width="170"/><br/>
+      <b>Expense UI</b>
+    </td>
+
+    <td align="center">
+      <img src="./assets/menu.jpeg" width="170"/><br/>
+      <b>Menu UI</b>
+    </td>
+  </tr>
+
+  <tr>
+    <td align="center">
+      <img src="./assets/feedback.jpeg" width="170"/><br/>
+      <b>Feedback UI</b>
+    </td>
+
+    <td align="center">
+      <img src="./assets/profile.jpeg" width="170"/><br/>
+      <b>Profile UI</b>
+    </td>
+
+    <td align="center">
+      <img src="./assets/kitchen.jpeg" width="170"/><br/>
+      <b>Meal Attendance UI</b>
+    </td>
+  </tr>
+</table>
+
+<br/>
+
+<table align="center">
+  <tr>
+    <td align="center">
+      <img src="./assets/invite.jpeg" width="250"/><br/>
+      <b>Email Invite System</b>
+    </td>
+  </tr>
+</table>
+
+---
