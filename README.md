@@ -44,20 +44,20 @@ The system connects both **students** and **mess administrators** through a sing
 # 📱 Application UI Screenshots
 
 <p align="center">
-  <img src="./assets/Choose.jpeg" width="220"/><br>
-  <img src="./assets/login.jpeg" width="220"/><br>
+  <img src="./assets/Choose.jpeg" width="170"/>
+  <img src="./assets/login.jpeg" width="170"/>
   <b>Login UI</b>
 </p>
 
 <p align="center">
-  <img src="./assets/dashboard.jpeg" width="220"/>
-  <img src="./assets/expense.jpeg" width="220"/>
-  <img src="./assets/menu.jpeg" width="220"/>
-  <img src="./assets/feedback.jpeg" width="220"/>
-  <img src="./assets/profile.jpeg" width="220"/>
+  <img src="./assets/dashboard.jpeg" width="170"/>
+  <img src="./assets/expense.jpeg" width="170"/>
+  <img src="./assets/menu.jpeg" width="170"/>
+  <img src="./assets/feedback.jpeg" width="170"/>
+  <img src="./assets/profile.jpeg" width="170"/>
 </p>
 
 <p align="center">
-  <img src="./assets/invite.jpeg" width="220"/>
-  <img src="./assets/kitchen.jpeg" width="220"/>
+  <img src="./assets/invite.jpeg" width="170"/>
+  <img src="./assets/kitchen.jpeg" width="170"/>
 </p>
