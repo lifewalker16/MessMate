@@ -43,7 +43,7 @@ The system connects both **students** and **mess administrators** through a sing
 ---
 # 📱 Application UI Screenshots
 
-<table>
+<table align='center'>
   <tr>
     <td align="center">
       <img src="./assets/Choose.jpeg" width="170"><br>
@@ -72,9 +72,6 @@ The system connects both **students** and **mess administrators** through a sing
       <img src="./assets/menu.jpeg" width="170"><br>
       <b>Menu UI</b>
     </td>
-  </tr>
-
-  <tr>
     <td align="center">
       <img src="./assets/feedback.jpeg" width="170"><br>
       <b>Feedback UI</b>
@@ -91,7 +88,7 @@ The system connects both **students** and **mess administrators** through a sing
 <table>
   <tr>
     <td align="center">
-      <img src="./assets/invite.jpeg" width="250"><br>
+      <img src="./assets/invite.jpeg" width="170"><br>
       <b>Email Invite System</b>
     </td>
     <td align="center">
