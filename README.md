@@ -27,8 +27,9 @@ The system connects both **students** and **mess administrators** through a sing
 ### 🧑‍💼 Admin Portal
 - Manage **student records** and **meal attendance**
 - Update or modify **daily menus**
-- Monitor **meal participation **
+- Monitor **meal participation**
 - View and respond to **feedback or complaints**
+- Send **invite** to students 
 
 ---
 
