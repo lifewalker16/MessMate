@@ -48,7 +48,7 @@ The system connects both **students** and **mess administrators** through a sing
   <tr>
     <td align="center">
       <img src="./assets/splash.jpeg" width="170"><br>
-      <b>Choose Role UI</b>
+      <b>Splash Screen</b>
     </td>
     <td align="center">
       <img src="./assets/Choose.jpeg" width="170"><br>
@@ -56,11 +56,11 @@ The system connects both **students** and **mess administrators** through a sing
     </td>
     <td align="center">
       <img src="./assets/login.jpeg" width="170"><br>
-      <b>Login UI</b>
+      <b>User Login</b>
     </td>
     <td align="center">
       <img src="./assets/admin.jpeg" width="170"><br>
-      <b>Choose Role UI</b>
+      <b>Admin Login</b>
     </td>
   </tr>
 </table>
