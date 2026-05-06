@@ -42,11 +42,60 @@ The system connects both **students** and **mess administrators** through a sing
 
 ---
 
-## 🧑‍💻 Installation & Setup
+# 📱 Application UI Screenshots
 
-Follow these steps to run the project locally:
+## 🔐 Login Screen
+<p align="center">
+  <img src="./assets/login.jpeg" width="250"/>
+</p>
 
-### 1️⃣ Clone the Repository
-```bash
-git clone https://github.com/lifewalker16/MessMate.git
-cd MessMate
+---
+
+## 📊 Dashboard UI
+<p align="center">
+  <img src="./assets/dashboard.jpeg" width="250"/>
+</p>
+
+---
+
+## 💰 Expense / Billing UI
+<p align="center">
+  <img src="./assets/expense.jpeg" width="250"/>
+</p>
+
+---
+
+## 🍽️ Menu UI
+<p align="center">
+  <img src="./assets/menu.jpeg" width="250"/>
+</p>
+
+---
+
+## 💬 Feedback UI
+<p align="center">
+  <img src="./assets/feedback.jpeg" width="250"/>
+</p>
+
+---
+
+## 👤 Profile UI
+<p align="center">
+  <img src="./assets/profile.jpeg" width="250"/>
+</p>
+
+---
+
+## 📧 Student Invite via Email
+<p align="center">
+  <img src="./assets/invite.jpeg" width="500"/>
+</p>
+
+---
+
+## ✅ Meal Attendance UI
+<p align="center">
+  <img src="./assets/kitchen.jpeg" width="250"/>
+</p>
+
+---
